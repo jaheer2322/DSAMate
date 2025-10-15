@@ -5,6 +5,7 @@ namespace DSAMate.API.Repositories
 {
     public interface IQuestionRepository
     {
+        Task<QuestionDTO?> GetAsync(Guid id);
         Task<List<QuestionDTO>> GetAllAsync(string? column, 
                                             string? query, 
                                             string? sortBy, 

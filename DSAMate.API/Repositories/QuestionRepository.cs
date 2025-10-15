@@ -15,6 +15,11 @@ namespace DSAMate.API.Repositories
             _dbContext = dbContext;
             _mapper = mapper;
         }
+        public async Task<QuestionDTO?> GetAsync(Guid id)
+        {
+            var question = await _dbContext.Questions.FirstOrDefaultAsync(q => q.Id == id);
+            return _mapper.Map<QuestionDTO?>(question);
+        }
         public async Task<List<QuestionDTO>> GetAllAsync(string? column, string? query, string? sortBy, bool isAscending, int pageNumber, int pageSize)
         {
             var questions = _dbContext.Questions.AsNoTracking();
@@ -66,5 +71,6 @@ namespace DSAMate.API.Repositories
             await _dbContext.SaveChangesAsync();
             return _mapper.Map<QuestionDTO>(question);
         }
+
     }
 }

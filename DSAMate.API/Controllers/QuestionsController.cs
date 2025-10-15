@@ -1,7 +1,7 @@
-using AutoMapper;
 using DSAMate.API.Filters;
 using DSAMate.API.Models.Dtos;
 using DSAMate.API.Repositories;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace DSAMate.API.Controllers
@@ -15,13 +15,13 @@ namespace DSAMate.API.Controllers
             "difficulty",
             "topic"
         };
-        private readonly List<string> allowedParameters = new List<string> { 
-            "column", 
-            "query", 
-            "sortBy", 
-            "isAscending", 
-            "pageNumber", 
-            "pageSize" 
+        private readonly List<string> allowedParameters = new List<string> {
+            "column",
+            "query",
+            "sortBy",
+            "isAscending",
+            "pageNumber",
+            "pageSize"
         };
         private readonly IQuestionRepository _questionRepository;
         public QuestionsController(IQuestionRepository questionRepository)
@@ -29,7 +29,29 @@ namespace DSAMate.API.Controllers
             _questionRepository = questionRepository;
         }
 
+        [HttpPost]
+        [ValidateModelAttribute]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> Create([FromBody] CreateQuestionDTO createQuestionDTO)
+        {
+            var questionDTO = await _questionRepository.CreateAsync(createQuestionDTO);
+            return Ok(questionDTO);
+        }
+
+        [HttpGet("{id}")]
+        [Authorize(Roles = "Admin, User")]
+        public async Task<IActionResult> Get(Guid id)
+        {
+            var questionDTO = await _questionRepository.GetAsync(id);
+            if (questionDTO == null)
+            {
+                return NotFound();
+            }
+            return Ok(questionDTO);
+        }
+
         [HttpGet]
+        [Authorize(Roles = "Admin, User")]
         public async Task<IActionResult> GetAll([FromQuery] string? column,
                                                 [FromQuery] string? query, 
                                                 [FromQuery] string? sortBy, 
@@ -57,14 +79,6 @@ namespace DSAMate.API.Controllers
 
             var questionDTOs = await _questionRepository.GetAllAsync(column, query, sortBy, isAscending, pageNumber, pageSize);
             return Ok(questionDTOs);
-        }
-
-        [HttpPost]
-        [ValidateModelAttribute]
-        public async Task<IActionResult> Create([FromBody] CreateQuestionDTO createQuestionDTO)
-        {
-            var questionDTO = await _questionRepository.CreateAsync(createQuestionDTO);
-            return Ok(questionDTO);
         }
     }
 }
