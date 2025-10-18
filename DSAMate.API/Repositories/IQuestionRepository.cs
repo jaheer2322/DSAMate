@@ -1,5 +1,4 @@
-﻿using DSAMate.API.Data.Domains;
-using DSAMate.API.Models.Dtos;
+﻿using DSAMate.API.Models.Dtos;
 
 namespace DSAMate.API.Repositories
 {
@@ -13,5 +12,9 @@ namespace DSAMate.API.Repositories
                                             int pageNumber, 
                                             int pageSize);
         Task<QuestionDTO> CreateAsync(CreateQuestionDTO createQuestionDTO);
+        Task MarkAsSolvedAsync(Guid questionId);
+        Task<List<QuestionDTO>> GetUserSolvedQuestionsAsync();
+        Task<Dictionary<string, TopicProgressDTO>> GetProgressForUserAsync();
+        Task<List<QuestionDTO>> CreateBulkAsync(List<CreateQuestionDTO> createQuestionDTOs);
     }
 }

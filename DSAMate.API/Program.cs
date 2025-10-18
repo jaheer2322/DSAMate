@@ -63,6 +63,8 @@ builder.Services.AddAutoMapper(cfg => cfg.AddProfile<MappingProfiles>());
 
 builder.Services.AddScoped<IQuestionRepository, QuestionRepository>();
 builder.Services.AddScoped<IAuthTokenService, AuthTokenService>();
+builder.Services.AddHttpContextAccessor();
+builder.Services.AddScoped<IUserContextService, UserContextService>();
 
 // Register SQL Server DSAMate database
 builder.Services.AddDbContext<AppDbContext>(options => 
@@ -75,7 +77,7 @@ builder.Services.AddDbContext<AuthDbContext>(options =>
 // Configure ASP.NET Identity for auth and role management
 builder.Services.AddIdentityCore<IdentityUser>()
     .AddRoles<IdentityRole>()
-    .AddTokenProvider<DataProtectorTokenProvider<IdentityUser>>("GeekStore")
+    .AddTokenProvider<DataProtectorTokenProvider<IdentityUser>>("DSAMate")
     .AddDefaultTokenProviders()
     .AddEntityFrameworkStores<AuthDbContext>();
 

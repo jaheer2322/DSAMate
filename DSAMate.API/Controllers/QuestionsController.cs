@@ -38,6 +38,14 @@ namespace DSAMate.API.Controllers
             return Ok(questionDTO);
         }
 
+        [HttpPost("bulk")]
+        [ValidateModelAttribute]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> CreateBulk([FromBody] List<CreateQuestionDTO> createQuestionDTOs)
+        {
+            var questionDTOs = await _questionRepository.CreateBulkAsync(createQuestionDTOs);
+            return Ok(questionDTOs);
+        }
         [HttpGet("{id}")]
         [Authorize(Roles = "Admin, User")]
         public async Task<IActionResult> Get(Guid id)
@@ -79,6 +87,30 @@ namespace DSAMate.API.Controllers
 
             var questionDTOs = await _questionRepository.GetAllAsync(column, query, sortBy, isAscending, pageNumber, pageSize);
             return Ok(questionDTOs);
+        }
+
+        [HttpPost("{questionId}/mark-solved")]
+        [Authorize(Roles = "Admin, User")]
+        public async Task<IActionResult> MarkSolved(Guid questionId)
+        {
+            await _questionRepository.MarkAsSolvedAsync(questionId);
+            return Ok();
+        }
+
+        [HttpGet("solved")]
+        [Authorize(Roles = "Admin, User")]
+        public async Task<IActionResult> SolvedQuestions()
+        {
+            var questionsSolved = await _questionRepository.GetUserSolvedQuestionsAsync();
+            return Ok(questionsSolved);
+        }
+
+        [HttpGet("progress")]
+        [Authorize(Roles = "Admin, User")]
+        public async Task<IActionResult> Progress()
+        {
+            var progress = await _questionRepository.GetProgressForUserAsync();
+            return Ok(progress);
         }
     }
 }

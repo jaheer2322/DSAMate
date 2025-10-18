@@ -11,7 +11,10 @@
         Greedy,
         Stack,
         Queue,
-        Math
+        Math,
+        Trie,
+        Backtracking,
+        Design
     }
 
 }

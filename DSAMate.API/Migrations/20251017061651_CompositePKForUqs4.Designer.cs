@@ -4,6 +4,7 @@ using DSAMate.API.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace DSAMate.API.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251017061651_CompositePKForUqs4")]
+    partial class CompositePKForUqs4
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -42,7 +45,7 @@ namespace DSAMate.API.Migrations
 
                     b.Property<string>("Title")
                         .IsRequired()
-                        .HasColumnType("nvarchar(450)");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Topic")
                         .IsRequired()
@@ -52,9 +55,6 @@ namespace DSAMate.API.Migrations
 
                     b.HasIndex("Difficulty")
                         .HasDatabaseName("IX_Questions_Difficulty");
-
-                    b.HasIndex("Title")
-                        .IsUnique();
 
                     b.HasIndex("Topic")
                         .HasDatabaseName("IX_Questions_Topic");

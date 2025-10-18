@@ -1,4 +1,5 @@
-﻿using System.Net;
+﻿using System;
+using System.Net;
 
 namespace DSAMate.API.Middlewares
 {
@@ -24,15 +25,25 @@ namespace DSAMate.API.Middlewares
                 // Log the exception
                 _logger.LogError(ex, errorId + " : " + ex.Message);
 
-                // Return a custom error response
-                httpContext.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
-                httpContext.Response.ContentType = "application/json";
+                var errorMessage = "Something went wrong! Please check the logs with the help of provided Id";
 
+                // Return a custom error response
+                if (ex is InvalidOperationException)
+                {
+                    httpContext.Response.StatusCode = StatusCodes.Status400BadRequest;
+                    errorMessage = ex.Message;
+                }
+
+                else
+                    httpContext.Response.StatusCode = StatusCodes.Status500InternalServerError;
+                
+                httpContext.Response.ContentType = "application/json";
                 var error = new
                 {
                     Id = errorId,
-                    ErrorMessage = "Something went wrong! Please check the logs with the help of provided Id"
+                    ErrorMessage = errorMessage
                 };
+
 
                 await httpContext.Response.WriteAsJsonAsync(error);
             }

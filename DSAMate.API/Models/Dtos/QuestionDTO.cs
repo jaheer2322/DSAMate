@@ -8,5 +8,7 @@
         public string Difficulty { get; set; }
         public string Topic { get; set; }
         public string Hint { get; set; }
+        public bool Solved { get; set; }
+        public DateTime? SolvedAt { get; set; }
     }
 }

@@ -15,8 +15,11 @@ namespace DSAMate.API.Services
         }
         public string GetAuthToken(IdentityUser user, List<string> roles)
         {
-            var claims = new List<Claim>();
-            claims.Add(new Claim(ClaimTypes.Email, user.Email));
+            var claims = new List<Claim>
+            {
+                new Claim(ClaimTypes.NameIdentifier, user.Id),
+                new Claim(ClaimTypes.Email, user.Email)
+            };
 
             foreach (var role in roles)
             {

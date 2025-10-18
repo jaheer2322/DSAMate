@@ -17,7 +17,7 @@ namespace DSAMate.API.Controllers
             _authTokenService = authTokenService;
         }
         [HttpPost]
-        [Route("/Register")]
+        [Route("Register")]
         public async Task<IActionResult> Register([FromBody] RegisterRequestDTO registerRequestDto)
         {
             var identityUser = new IdentityUser
@@ -45,7 +45,7 @@ namespace DSAMate.API.Controllers
         }
 
         [HttpPost]
-        [Route("/login")]
+        [Route("Login")]
         public async Task<IActionResult> LoginRequest([FromBody] LoginRequestDTO loginRequestDTO)
         {
             var user = await _userManager.FindByEmailAsync(loginRequestDTO.Username);
