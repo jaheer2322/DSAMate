@@ -4,7 +4,6 @@ using DSAMate.API.Data.Domains;
 using DSAMate.API.Models.Domains;
 using DSAMate.API.Models.Dtos;
 using DSAMate.API.Services;
-using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.EntityFrameworkCore;
 
 namespace DSAMate.API.Repositories
@@ -29,17 +28,44 @@ namespace DSAMate.API.Repositories
         {
             var userId = _userContext.GetUserId();
             var questions = _dbContext.Questions.AsNoTracking();
+            var solvedQuestions = await _dbContext.UserQuestionStatuses.AsNoTracking()
+                .Where(uqs => uqs.UserId == userId)
+                .Select(uqs => new {
+                    Id = uqs.QuestionId,
+                    SolvedAt = uqs.SolvedAt
+                })
+                .ToDictionaryAsync(q => q.Id, q => q.SolvedAt);
 
             // Filtering
             if (string.IsNullOrWhiteSpace(column) == false && string.IsNullOrWhiteSpace(query) == false)
             {
-                questions = column.ToLower() switch
+                if(column.ToLower() == "solved")
                 {
-                    "title" => questions.Where(q => q.Title.ToLower().Contains(query)),
-                    "difficulty" => questions.Where(q => q.Difficulty.ToString().ToLower() == query),
-                    "topic" => questions.Where(q => q.Topic.ToString().ToLower() == query),
-                    _ => questions
-                };
+                    var solvedQuestionIds = solvedQuestions.Keys;
+                    query = query.ToLower();
+                    if (query == "true")
+                    {
+                        questions = questions.Where(q => solvedQuestionIds.Contains(q.Id));
+                    }
+                    else
+                    {
+                        questions = questions.Where(q => !solvedQuestionIds.Contains(q.Id));
+                    }
+                }
+                else
+                {
+                    questions = column.ToLower() switch
+                    {
+                        "title" => questions.Where(q => q.Title.Contains(query)),
+                        "difficulty" => Enum.TryParse<Difficulty>(query, ignoreCase: true, out var difficultyVal)
+                                        ? questions.Where(q => q.Difficulty == difficultyVal)
+                                        : questions.Where(q => false),
+                        "topic" => Enum.TryParse<Topic>(query, ignoreCase: true, out var topicVal)
+                                   ? questions.Where(q => q.Topic == topicVal)
+                                   : questions.Where(q => false),
+                        _ => questions
+                    };
+                }
             }
 
             // Sorting
@@ -67,15 +93,8 @@ namespace DSAMate.API.Repositories
             // Pagination
             var skippableQuestions = (pageNumber - 1) * pageSize;
 
-            var allQuestions = await questions.Skip(skippableQuestions).Take(pageSize).ToListAsync();
 
-            var solvedQuestions = await _dbContext.UserQuestionStatuses.AsNoTracking()
-                .Where(uqs => uqs.UserId == userId)
-                .Select(uqs => new {
-                    Id = uqs.QuestionId,
-                    SolvedAt = uqs.SolvedAt
-                })
-                .ToDictionaryAsync(q => q.Id, q => q.SolvedAt);
+            var allQuestions = await questions.Skip(skippableQuestions).Take(pageSize).ToListAsync();
 
             var questionDTOs = allQuestions.Select(q =>
             {

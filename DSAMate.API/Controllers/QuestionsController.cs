@@ -13,7 +13,8 @@ namespace DSAMate.API.Controllers
         private readonly List<string> queryableColumns = new List<string> {
             "title",
             "difficulty",
-            "topic"
+            "topic",
+            "solved"
         };
         private readonly List<string> allowedParameters = new List<string> {
             "column",

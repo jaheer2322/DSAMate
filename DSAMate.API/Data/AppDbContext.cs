@@ -7,8 +7,8 @@ namespace DSAMate.API.Data
     public class AppDbContext : DbContext
     {
         public AppDbContext(DbContextOptions<AppDbContext> dbContextOptions) : base(dbContextOptions) { }
-        public required DbSet<Question> Questions { get; set; }
-        public required DbSet<UserQuestionStatus> UserQuestionStatuses { get; set; }
+        public DbSet<Question> Questions { get; set; }
+        public DbSet<UserQuestionStatus> UserQuestionStatuses { get; set; }
         
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
