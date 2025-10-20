@@ -1,0 +1,22 @@
+<Project Sdk="MSTest.Sdk/3.6.1">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <LangVersion>latest</LangVersion>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <UseVSTest>true</UseVSTest>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="AutoMapper" Version="15.0.1" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="9.0.10" />
+    <PackageReference Include="Microsoft.IdentityModel.JsonWebTokens" Version="8.14.0" />
+    <PackageReference Include="Moq" Version="4.20.72" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\DSAMate.API\DSAMate.API.csproj" />
+  </ItemGroup>
+
+</Project>
