@@ -1,9 +1,11 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
-VisualStudioVersion = 17.12.35514.174 d17.12
+VisualStudioVersion = 17.12.35514.174
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DSAMate.API", "DSAMate.API\DSAMate.API.csproj", "{BB5DA76A-2752-44EB-8CCE-2E9F252F8EE8}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DSAMate.API.Tests", "DSAMate.API.Tests\DSAMate.API.Tests.csproj", "{23CD2D53-F26F-46B7-A989-CC7B55F390FB}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -15,6 +17,10 @@ Global
 		{BB5DA76A-2752-44EB-8CCE-2E9F252F8EE8}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{BB5DA76A-2752-44EB-8CCE-2E9F252F8EE8}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{BB5DA76A-2752-44EB-8CCE-2E9F252F8EE8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{23CD2D53-F26F-46B7-A989-CC7B55F390FB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{23CD2D53-F26F-46B7-A989-CC7B55F390FB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{23CD2D53-F26F-46B7-A989-CC7B55F390FB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{23CD2D53-F26F-46B7-A989-CC7B55F390FB}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
