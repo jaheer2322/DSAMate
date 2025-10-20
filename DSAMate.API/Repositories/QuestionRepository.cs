@@ -200,9 +200,20 @@ namespace DSAMate.API.Repositories
             var userId = _userContext.GetUserId();
             var solved = await _dbContext.UserQuestionStatuses.AsNoTracking()
                 .Where(uqs => uqs.UserId == userId)
-                .Select(uqs => uqs.Question)
+                .Select(uqs => new {
+                    QuestionDomain = uqs.Question,
+                    Solved = uqs.IsSolved,
+                    SolvedAt = uqs.SolvedAt
+                })
                 .ToListAsync();
-            return _mapper.Map<List<QuestionDTO>>(solved);
+            return solved.Select(s =>
+            {
+                var questionDTO = _mapper.Map<QuestionDTO>(s.QuestionDomain);
+                questionDTO.Solved = s.Solved;
+                questionDTO.SolvedAt = s.SolvedAt;
+                return questionDTO;
+            })
+            .ToList() ;
         }
 
         public async Task<Dictionary<string, TopicProgressDTO>> GetProgressForUserAsync()

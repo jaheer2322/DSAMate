@@ -216,23 +216,29 @@ public class QuestionRepositoryTests
         await _dbContext.Questions.AddAsync(question);
         // Adding another question
         await _dbContext.Questions.AddAsync(new Question { Id = Guid.NewGuid(), Title = "Q2", Description = "Desc", Difficulty = Difficulty.Easy, Hint = "HInt" });
+        var isSolved = true;
+        var solvedAt = DateTime.UtcNow;
         await _dbContext.UserQuestionStatuses.AddAsync(new UserQuestionStatus
         {
             UserId = _testUserId,
             QuestionId = question.Id,
-            IsSolved = true,
-            SolvedAt = DateTime.UtcNow
+            IsSolved = isSolved,
+            SolvedAt = solvedAt
         });
         await _dbContext.SaveChangesAsync();
-        var dto = new List<QuestionDTO> { new() { Id = question.Id, Title = "TestQuestion", Description = "Desc", Difficulty = "Easy", Hint = "HInt" } };
-        _mapperMock.Setup(m => m.Map<List<QuestionDTO>>(It.IsAny<List<Question>>())).Returns(dto);
+        var dto = new QuestionDTO { Id = question.Id, Title = "Q1", Description = "Desc", Difficulty = "Easy", Hint = "HInt", Solved = isSolved, SolvedAt = solvedAt };
+        _mapperMock.Setup(m => m.Map<QuestionDTO>(It.IsAny<Question>())).Returns(dto);
 
         // Act
         var questionDTOList = await _questionRepository.GetUserSolvedQuestionsAsync();
 
         // Assert
-        Assert.IsTrue(questionDTOList.Count() == 1);
-        CollectionAssert.AreEquivalent(questionDTOList, dto);
+        Assert.AreEqual(questionDTOList.Count(), 1);
+        var expectedTime = DateTime.UtcNow;
+        var solvedQuestion = questionDTOList.First();
+        Assert.IsTrue(solvedQuestion.Solved);
+        Assert.IsNotNull(solvedQuestion.SolvedAt);
+        Assert.IsTrue(solvedQuestion.SolvedAt?.ToUniversalTime().Subtract(expectedTime).Duration().TotalSeconds < 1);
     }
     [TestMethod]
     public async Task GetProgressForUserAsync_ReturnsProgressPerTopic()
