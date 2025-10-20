@@ -21,8 +21,20 @@ namespace DSAMate.API.Repositories
         }
         public async Task<QuestionDTO?> GetAsync(Guid id)
         {
+            var userId = _userContext.GetUserId();
             var question = await _dbContext.Questions.FirstOrDefaultAsync(q => q.Id == id);
-            return _mapper.Map<QuestionDTO?>(question);
+            if (question == null)
+            {
+                return null;
+            }
+            var questionDTO = _mapper.Map<QuestionDTO>(question);
+            var solved = await _dbContext.UserQuestionStatuses.FirstOrDefaultAsync(uqs => uqs.UserId == userId && uqs.QuestionId == id);
+            if(solved != null)
+            {
+                questionDTO.Solved = true;
+                questionDTO.SolvedAt = solved.SolvedAt;
+            }
+            return questionDTO;
         }
         public async Task<List<QuestionDTO>> GetAllAsync(string? column, string? query, string? sortBy, bool isAscending, int pageNumber, int pageSize)
         {
@@ -39,10 +51,10 @@ namespace DSAMate.API.Repositories
             // Filtering
             if (string.IsNullOrWhiteSpace(column) == false && string.IsNullOrWhiteSpace(query) == false)
             {
+                query = query.ToLower();
                 if(column.ToLower() == "solved")
                 {
                     var solvedQuestionIds = solvedQuestions.Keys;
-                    query = query.ToLower();
                     if (query == "true")
                     {
                         questions = questions.Where(q => solvedQuestionIds.Contains(q.Id));
@@ -56,7 +68,7 @@ namespace DSAMate.API.Repositories
                 {
                     questions = column.ToLower() switch
                     {
-                        "title" => questions.Where(q => q.Title.Contains(query)),
+                        "title" => questions.Where(q => q.Title.ToLower().Contains(query)),
                         "difficulty" => Enum.TryParse<Difficulty>(query, ignoreCase: true, out var difficultyVal)
                                         ? questions.Where(q => q.Difficulty == difficultyVal)
                                         : questions.Where(q => false),
@@ -157,6 +169,11 @@ namespace DSAMate.API.Repositories
                 throw new UnauthorizedAccessException();
             }
 
+            var question = await _dbContext.Questions.FirstOrDefaultAsync(q => q.Id == questionId);
+            if (question == null)
+            {
+                throw new InvalidOperationException("QuestionId doesn't exist");
+            }
             var uqs = await _dbContext.UserQuestionStatuses.FirstOrDefaultAsync(uqs => uqs.UserId == userId && uqs.QuestionId == questionId);
 
             if(uqs == null)

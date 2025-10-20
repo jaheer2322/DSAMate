@@ -83,7 +83,7 @@ namespace DSAMate.API.Controllers
 
             if (string.IsNullOrWhiteSpace(sortBy) == false && sortBy.ToLower() != "title")
             {
-                return BadRequest($"Invalid column to sortBy {column}. Allowed column is title");
+                return BadRequest($"Invalid column to sortBy {sortBy}. Allowed column is title");
             }
 
             var questionDTOs = await _questionRepository.GetAllAsync(column, query, sortBy, isAscending, pageNumber, pageSize);

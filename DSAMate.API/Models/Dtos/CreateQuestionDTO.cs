@@ -12,8 +12,10 @@ namespace DSAMate.API.Models.Dtos
         [Required]
         [EnumDataType(typeof(Difficulty))]
         public string Difficulty {  get; set; }
+        [Required]
         [EnumDataType(typeof(Topic))]
         public string Topic {  get; set; }
+        [Required]
         [StringLength(100)]
         public string Hint {  get; set; }
 
