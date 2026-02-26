@@ -8,7 +8,7 @@ using DSAMate.API.Data.Domains;
 using DSAMate.API.Models.Dtos;
 using DSAMate.API.Models.Domains;
 
-namespace DSAMate.API.Tests;
+namespace DSAMate.API.Tests.UnitTests;
 
 [TestClass]
 public class QuestionRepositoryTests

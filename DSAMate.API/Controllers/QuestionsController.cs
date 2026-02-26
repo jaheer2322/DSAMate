@@ -1,4 +1,3 @@
-using DSAMate.API.Filters;
 using DSAMate.API.Models.Dtos;
 using DSAMate.API.Repositories;
 using Microsoft.AspNetCore.Authorization;
@@ -31,7 +30,6 @@ namespace DSAMate.API.Controllers
         }
 
         [HttpPost]
-        [ValidateModelAttribute]
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Create([FromBody] CreateQuestionDTO createQuestionDTO)
         {
@@ -39,8 +37,7 @@ namespace DSAMate.API.Controllers
             return Ok(questionDTO);
         }
 
-        [HttpPost("bulk")]
-        [ValidateModelAttribute]
+        [HttpPost("/bulk")]
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> CreateBulk([FromBody] List<CreateQuestionDTO> createQuestionDTOs)
         {
@@ -72,18 +69,18 @@ namespace DSAMate.API.Controllers
             var extraParameters = HttpContext.Request.Query.Keys.Except(allowedParameters, StringComparer.OrdinalIgnoreCase).ToList();
             if (extraParameters.Any())
             {
-                return BadRequest($"Invalid query parameters: {string.Join(", ", extraParameters)}. Allowed parameters are: {string.Join(", ", allowedParameters)}");
+                return BadRequest(new { Response = $"Invalid query parameters: {string.Join(", ", extraParameters)}. Allowed parameters are: {string.Join(", ", allowedParameters)}" });
             }
 
             // Validate columns passed in query
             if (string.IsNullOrWhiteSpace(column) == false && !queryableColumns.Contains(column.ToLower()))
             {
-                return BadRequest($"Invalid column to filter {column}. Allowed columns are: {string.Join(", ", queryableColumns)}");
+                return BadRequest(new { Response = $"Invalid column to filter {column}. Allowed columns are: {string.Join(", ", queryableColumns)}" });
             }
 
             if (string.IsNullOrWhiteSpace(sortBy) == false && sortBy.ToLower() != "title")
             {
-                return BadRequest($"Invalid column to sortBy {sortBy}. Allowed column is title");
+                return BadRequest(new { Response = $"Invalid column to sortBy {sortBy}. Allowed column is title" }); 
             }
 
             var questionDTOs = await _questionRepository.GetAllAsync(column, query, sortBy, isAscending, pageNumber, pageSize);
@@ -98,7 +95,7 @@ namespace DSAMate.API.Controllers
             return Ok();
         }
 
-        [HttpGet("solved")]
+        [HttpGet("/solved")]
         [Authorize(Roles = "Admin, User")]
         public async Task<IActionResult> SolvedQuestions()
         {
@@ -106,7 +103,7 @@ namespace DSAMate.API.Controllers
             return Ok(questionsSolved);
         }
 
-        [HttpGet("progress")]
+        [HttpGet("/progress")]
         [Authorize(Roles = "Admin, User")]
         public async Task<IActionResult> Progress()
         {

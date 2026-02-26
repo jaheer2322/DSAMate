@@ -42,7 +42,7 @@ namespace DSAMate.API.Data
             modelBuilder.Entity<UserQuestionStatus>()
                 .HasKey(uqs => new { uqs.UserId, uqs.QuestionId });
 
-            // For question -> user realtion
+            // For question -> user relation
             modelBuilder.Entity<UserQuestionStatus>()
                 .HasOne(uqs => uqs.Question)
                 .WithMany()

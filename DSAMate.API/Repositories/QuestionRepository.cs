@@ -36,88 +36,112 @@ namespace DSAMate.API.Repositories
             }
             return questionDTO;
         }
-        public async Task<List<QuestionDTO>> GetAllAsync(string? column, string? query, string? sortBy, bool isAscending, int pageNumber, int pageSize)
+
+        public async Task<List<QuestionDTO>> GetAllAsync(
+    string? column,
+    string? query,
+    string? sortBy,
+    bool isAscending,
+    int pageNumber,
+    int pageSize)
         {
             var userId = _userContext.GetUserId();
-            var questions = _dbContext.Questions.AsNoTracking();
-            var solvedQuestions = await _dbContext.UserQuestionStatuses.AsNoTracking()
-                .Where(uqs => uqs.UserId == userId)
-                .Select(uqs => new {
-                    Id = uqs.QuestionId,
-                    SolvedAt = uqs.SolvedAt
-                })
-                .ToDictionaryAsync(q => q.Id, q => q.SolvedAt);
+
+            // Base query
+            var questionsQuery = _dbContext.Questions.AsNoTracking();
 
             // Filtering
-            if (string.IsNullOrWhiteSpace(column) == false && string.IsNullOrWhiteSpace(query) == false)
+            if (!string.IsNullOrWhiteSpace(column) && !string.IsNullOrWhiteSpace(query))
             {
                 query = query.ToLower();
-                if(column.ToLower() == "solved")
+
+                if (column.ToLower() == "solved")
                 {
-                    var solvedQuestionIds = solvedQuestions.Keys;
                     if (query == "true")
                     {
-                        questions = questions.Where(q => solvedQuestionIds.Contains(q.Id));
+                        questionsQuery = questionsQuery.Where(q =>
+                            _dbContext.UserQuestionStatuses.Any(uqs =>
+                                uqs.QuestionId == q.Id &&
+                                uqs.UserId == userId &&
+                                uqs.IsSolved));
                     }
                     else
                     {
-                        questions = questions.Where(q => !solvedQuestionIds.Contains(q.Id));
+                        questionsQuery = questionsQuery.Where(q =>
+                            !_dbContext.UserQuestionStatuses.Any(uqs =>
+                                uqs.QuestionId == q.Id &&
+                                uqs.UserId == userId &&
+                                uqs.IsSolved));
                     }
                 }
                 else
                 {
-                    questions = column.ToLower() switch
+                    questionsQuery = column.ToLower() switch
                     {
-                        "title" => questions.Where(q => q.Title.ToLower().Contains(query)),
-                        "difficulty" => Enum.TryParse<Difficulty>(query, ignoreCase: true, out var difficultyVal)
-                                        ? questions.Where(q => q.Difficulty == difficultyVal)
-                                        : questions.Where(q => false),
-                        "topic" => Enum.TryParse<Topic>(query, ignoreCase: true, out var topicVal)
-                                   ? questions.Where(q => q.Topic == topicVal)
-                                   : questions.Where(q => false),
-                        _ => questions
+                        "title" =>
+                            questionsQuery.Where(q =>
+                                q.Title.ToLower().Contains(query)),
+
+                        "difficulty" =>
+                            Enum.TryParse<Difficulty>(query, true, out var difficulty)
+                                ? questionsQuery.Where(q => q.Difficulty == difficulty)
+                                : questionsQuery.Where(q => false),
+
+                        "topic" =>
+                            Enum.TryParse<Topic>(query, true, out var topic)
+                                ? questionsQuery.Where(q => q.Topic == topic)
+                                : questionsQuery.Where(q => false),
+
+                        _ => questionsQuery
                     };
                 }
             }
 
             // Sorting
-            if (string.IsNullOrWhiteSpace(sortBy) == false)
+            if (!string.IsNullOrWhiteSpace(sortBy))
             {
-
-                if (isAscending == false)
+                questionsQuery = (sortBy.ToLower(), isAscending) switch
                 {
-                    questions = sortBy.ToLower() switch
-                    {
-                        "title" => questions.OrderByDescending(q => q.Title),
-                        _ => questions
-                    };
-                }
-                else
-                {
-                    questions = sortBy.ToLower() switch
-                    {
-                        "title" => questions.OrderBy(q => q.Title),
-                        _ => questions
-                    };
-                }
+                    ("title", true) => questionsQuery.OrderBy(q => q.Title),
+                    ("title", false) => questionsQuery.OrderByDescending(q => q.Title),
+                    _ => questionsQuery
+                };
             }
 
             // Pagination
-            var skippableQuestions = (pageNumber - 1) * pageSize;
+            var skip = (pageNumber - 1) * pageSize;
 
+            // Final projection (JOIN / EXISTS style)
+            var result = await questionsQuery
+                .Skip(skip)
+                .Take(pageSize)
+                .Select(q => new QuestionDTO
+                {
+                    Id = q.Id,
+                    Title = q.Title,
+                    Difficulty = q.Difficulty.ToString(),
+                    Topic = q.Topic.ToString(),
+                    Description = q.Description,
 
-            var allQuestions = await questions.Skip(skippableQuestions).Take(pageSize).ToListAsync();
+                    Solved = _dbContext.UserQuestionStatuses.Any(uqs =>
+                        uqs.QuestionId == q.Id &&
+                        uqs.UserId == userId &&
+                        uqs.IsSolved),
 
-            var questionDTOs = allQuestions.Select(q =>
-            {
-                var dto = _mapper.Map<QuestionDTO>(q);
-                dto.Solved = solvedQuestions.ContainsKey(q.Id);
-                dto.SolvedAt = solvedQuestions.GetValueOrDefault(q.Id);
-                return dto;
-            }).ToList();
+                    SolvedAt = _dbContext.UserQuestionStatuses
+                        .Where(uqs =>
+                            uqs.QuestionId == q.Id &&
+                            uqs.UserId == userId &&
+                            uqs.IsSolved)
+                        .Select(uqs => uqs.SolvedAt)
+                        .FirstOrDefault(),
+                    Hint = q.Hint,
+                })
+                .ToListAsync();
 
-            return questionDTOs;
+            return result;
         }
+
         public async Task<QuestionDTO> CreateAsync(CreateQuestionDTO createQuestionDTO)
         {
             var exists = await _dbContext.Questions
@@ -245,5 +269,6 @@ namespace DSAMate.API.Repositories
             });
             return progress;
         }
+
     }
 }

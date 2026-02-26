@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Moq;
 
-namespace DSAMate.API.Tests
+namespace DSAMate.API.Tests.UnitTests
 {
     [TestClass]
     public class ExceptionHandlerMiddlewareTests

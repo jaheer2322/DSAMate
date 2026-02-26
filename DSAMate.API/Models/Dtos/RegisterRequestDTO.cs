@@ -6,7 +6,7 @@ namespace DSAMate.API.Models.Dtos
     {
         [Required]
         [DataType(DataType.EmailAddress)]
-        public string UserName { get; set; }
+        public string EmailAddress { get; set; }
         [Required]
         [DataType(DataType.Password)]
         public string Password { get; set; }

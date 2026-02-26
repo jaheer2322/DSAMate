@@ -84,6 +84,7 @@ builder.Services.AddIdentityCore<IdentityUser>()
 // Customize password requirements for Identity
 builder.Services.Configure<IdentityOptions>(options =>
 {
+    options.User.RequireUniqueEmail = true;
     options.Password.RequireDigit = false;
     options.Password.RequireLowercase = false;
     options.Password.RequireNonAlphanumeric = false;

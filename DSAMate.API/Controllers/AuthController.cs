@@ -1,7 +1,7 @@
-﻿using DSAMate.API.Models.Dtos;
+﻿using DSAMate.API.Data;
+using DSAMate.API.Models.Dtos;
 using DSAMate.API.Services;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Identity.Data;
 using Microsoft.AspNetCore.Mvc;
 
 namespace DSAMate.API.Controllers
@@ -10,9 +10,11 @@ namespace DSAMate.API.Controllers
     [ApiController]
     public class AuthController : Controller
     {
+        private readonly RoleManager<IdentityRole> _rolemanager;
         private readonly UserManager<IdentityUser> _userManager;
         private readonly IAuthTokenService _authTokenService;
-        public AuthController(UserManager<IdentityUser> userManager, IAuthTokenService authTokenService) {
+        public AuthController(RoleManager<IdentityRole> rolemanager, UserManager<IdentityUser> userManager, IAuthTokenService authTokenService) {
+            _rolemanager = rolemanager;
             _userManager = userManager;
             _authTokenService = authTokenService;
         }
@@ -20,10 +22,27 @@ namespace DSAMate.API.Controllers
         [Route("Register")]
         public async Task<IActionResult> Register([FromBody] RegisterRequestDTO registerRequestDto)
         {
+            var userEmail = registerRequestDto.EmailAddress;
+            var existingUser = await _userManager.FindByEmailAsync(userEmail);
+
+            if (existingUser != null)
+            {
+                return BadRequest(new DefaultResponseDTO { Response = $"An account with {userEmail} already exists" });
+            }
+
+            foreach (var role in registerRequestDto.Roles)
+            {
+                var isRoleValid = await _rolemanager.FindByNameAsync(role);
+                if (isRoleValid == null)
+                {
+                    return BadRequest(new DefaultResponseDTO { Response = $"Role '{role}' does not exist" });
+                }
+            }
+
             var identityUser = new IdentityUser
             {
-                UserName = registerRequestDto.UserName,
-                Email = registerRequestDto.UserName
+                UserName = userEmail,
+                Email = userEmail
             };
 
             var identityResult = await _userManager.CreateAsync(identityUser, registerRequestDto.Password);
@@ -31,24 +50,48 @@ namespace DSAMate.API.Controllers
             if (identityResult.Succeeded)
             {
                 if (registerRequestDto.Roles.Any())
-                {
+                {   
                     identityResult = await _userManager.AddToRolesAsync(identityUser, registerRequestDto.Roles);
                 }
                 if (identityResult.Succeeded)
                 {
-                    return Ok("User registration successful! Please login");
+                    return Ok(new DefaultResponseDTO { Response = "User registration successful! Please login" });
                 }
             }
 
-            return BadRequest("Something went wrong");
+            return BadRequest(identityResult.Errors.ToList()[0]);
 
+        }
+
+        [HttpPost]
+        [Route("Unregister")]
+        public async Task<IActionResult> Unregister([FromBody] LoginRequestDTO loginRequestDTO)
+        {
+            var user = await _userManager.FindByEmailAsync(loginRequestDTO.EmailAddress);
+            if (user == null)
+            {
+                return BadRequest(new DefaultResponseDTO { Response = "Incorrect email" });
+            }
+
+            var passwordValid = await _userManager.CheckPasswordAsync(user, loginRequestDTO.Password);
+            if (!passwordValid)
+            {
+                return BadRequest(new DefaultResponseDTO { Response = "Incorrect password" });
+            }
+
+            var result = await _userManager.DeleteAsync(user);
+            if(result.Succeeded)
+            {
+                return Ok(new DefaultResponseDTO { Response = "User unregistered successfully" });
+            }
+            return BadRequest(new DefaultResponseDTO { Response = "Failed to unregister the user" });
         }
 
         [HttpPost]
         [Route("Login")]
         public async Task<IActionResult> LoginRequest([FromBody] LoginRequestDTO loginRequestDTO)
         {
-            var user = await _userManager.FindByEmailAsync(loginRequestDTO.Username);
+            var user = await _userManager.FindByEmailAsync(loginRequestDTO.EmailAddress);
             if (user != null)
             {
                 var passwordValidation = await _userManager.CheckPasswordAsync(user, loginRequestDTO.Password);
@@ -62,9 +105,9 @@ namespace DSAMate.API.Controllers
 
                     return Ok(response);
                 }
-                return BadRequest("Incorrect password!");
+                return BadRequest(new DefaultResponseDTO { Response = "Incorrect password!" });
             }
-            return BadRequest("Incorrect username");
+            return BadRequest(new DefaultResponseDTO { Response = "Incorrect email" });
         }
     }
 }

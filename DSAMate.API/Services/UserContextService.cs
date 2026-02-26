@@ -15,7 +15,7 @@ namespace DSAMate.API.Services
         public string? GetUserId()
         {
             return _httpContextAccessor.HttpContext?.User?
-                .FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                .FindFirst("UserId")?.Value;
         }
     }
 }

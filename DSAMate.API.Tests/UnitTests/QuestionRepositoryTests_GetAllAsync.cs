@@ -14,7 +14,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 
-namespace DSAMate.API.Tests
+namespace DSAMate.API.Tests.UnitTests
 {
     [TestClass]
     public class QuestionRepository_GetAllAsync_Tests

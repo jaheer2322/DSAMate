@@ -12,8 +12,8 @@ namespace DSAMate.API.Data
         {
             base.OnModelCreating(builder);
 
-            var userRoleId = "cf330825-ba85-43bc-9d1b-3d52286bc775";
-            var adminRoleId = "37798ece-bdaa-4764-9450-c2dcf7548a2f";
+            var userRoleId = "cf330825-ba85-43bc-9d1b-3d52286bc776";
+            var adminRoleId = "37798ece-bdaa-4764-9450-c2dcf7548a1f";
 
             var roles = new List<IdentityRole>
             {
@@ -32,6 +32,7 @@ namespace DSAMate.API.Data
                     NormalizedName = "Admin".ToUpper()
                 }
             };
+
             builder.Entity<IdentityRole>().HasData(roles);
         }
     }

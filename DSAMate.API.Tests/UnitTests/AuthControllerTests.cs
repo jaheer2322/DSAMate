@@ -1,15 +1,20 @@
 using DSAMate.API.Controllers;
+using DSAMate.API.Data;
 using DSAMate.API.Models.Dtos;
 using DSAMate.API.Services;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Moq;
+using Newtonsoft.Json.Linq;
+using static Microsoft.ApplicationInsights.MetricDimensionNames.TelemetryContext;
 
-namespace DSAMate.API.Tests
+namespace DSAMate.API.Tests.UnitTests
 {
     [TestClass]
     public class AuthControllerTests
     {
+        private Mock<RoleManager<IdentityRole>> _mockRoleManager;
         private Mock<UserManager<IdentityUser>> _mockUserManager;
         private Mock<IAuthTokenService> _mockAuthTokenService;
         private AuthController _controller;
@@ -23,10 +28,18 @@ namespace DSAMate.API.Tests
         {
             _mockUserManager = new Mock<UserManager<IdentityUser>>(
                 Mock.Of<IUserStore<IdentityUser>>(), null, null, null, null, null, null, null, null);
-
             _mockAuthTokenService = new Mock<IAuthTokenService>();
 
-            _controller = new AuthController(_mockUserManager.Object, _mockAuthTokenService.Object);
+            _mockRoleManager = new Mock<RoleManager<IdentityRole>>(
+        Mock.Of<IRoleStore<IdentityRole>>(), // Required: RoleStore
+        null, // Optional: IRoleValidators<TRole>[]
+        null, // Optional: ILookupNormalizer
+        null, // Optional: IdentityErrorDescriber
+        null // Optional: ILogger<RoleManager<TRole>>
+    );
+
+            _controller = new AuthController(_mockRoleManager.Object, _mockUserManager.Object, _mockAuthTokenService.Object);
+
         }
 
         // --- REGISTER (POST /Register) Tests ---
@@ -37,7 +50,7 @@ namespace DSAMate.API.Tests
             // Arrange
             var registerDto = new RegisterRequestDTO
             {
-                UserName = "new@user.com",
+                EmailAddress = "new@user.com",
                 Password = "Password1",
                 Roles = ["User"]
             };
@@ -50,12 +63,17 @@ namespace DSAMate.API.Tests
             _mockUserManager.Setup(um => um.AddToRolesAsync(It.IsAny<IdentityUser>(), registerDto.Roles))
                 .ReturnsAsync(IdentityResult.Success);
 
+            // Setup 3: Mock RoleManager to return a valid object for the valid role (if needed)
+            _mockRoleManager
+                .Setup(rm => rm.FindByNameAsync("User"))
+                .ReturnsAsync(new IdentityRole { Name = "User" });
+
             // Act
             var result = await _controller.Register(registerDto);
 
             // Assert (HTTP 200 OK)
             Assert.IsInstanceOfType(result, typeof(OkObjectResult));
-            Assert.AreEqual("User registration successful! Please login", (result as OkObjectResult)?.Value);
+            Assert.AreEqual("User registration successful! Please login", ((result as OkObjectResult)?.Value as DefaultResponseDTO).Response);
 
             // Verify creation and role assignment calls
             _mockUserManager.Verify(um => um.CreateAsync(It.IsAny<IdentityUser>(), registerDto.Password), Times.Once());
@@ -66,19 +84,28 @@ namespace DSAMate.API.Tests
         public async Task Register_ReturnsBadRequest_WhenUserCreationFailed()
         {
             // Arrange
-            var registerDto = new RegisterRequestDTO { UserName = "fail@user.com", Password = "P", Roles = ["User"] };
+            var registerDto = new RegisterRequestDTO { EmailAddress = "fail@user.com", Password = "P", Roles = ["User"] };
             var errors = new IdentityError { Description = "Password too weak" };
 
             // Setup: User creation fails
+            _mockUserManager
+            .Setup(um => um.FindByEmailAsync(registerDto.EmailAddress))
+            .ReturnsAsync((IdentityUser?)null);
+
+            _mockRoleManager
+                        .Setup(um => um.FindByNameAsync("User"))
+                        .ReturnsAsync(new IdentityRole { Name = "User"});
+
             _mockUserManager.Setup(um => um.CreateAsync(It.IsAny<IdentityUser>(), registerDto.Password))
                 .ReturnsAsync(IdentityResult.Failed(errors));
+
 
             // Act
             var result = await _controller.Register(registerDto);
 
             // Assert (HTTP 400 Bad Request)
             Assert.IsInstanceOfType(result, typeof(BadRequestObjectResult));
-            Assert.AreEqual("Something went wrong", (result as BadRequestObjectResult)?.Value);
+            Assert.AreEqual("Password too weak", ((result as BadRequestObjectResult)?.Value as IdentityError).Description);
 
             // Verify no role assignment was attempted
             _mockUserManager.Verify(um => um.AddToRolesAsync(It.IsAny<IdentityUser>(), It.IsAny<string[]>()), Times.Never());
@@ -88,7 +115,7 @@ namespace DSAMate.API.Tests
         public async Task Register_ReturnsBadRequest_WhenRoleAssignmentFailed()
         {
             // Arrange
-            var registerDto = new RegisterRequestDTO { UserName = "rolefail@user.com", Password = "P", Roles = ["InvalidRole"] };
+            var registerDto = new RegisterRequestDTO { EmailAddress = "rolefail@user.com", Password = "P", Roles = ["InvalidRole"] };
             var errors = new IdentityError { Description = "Role not found" };
 
             // Setup 1: User creation succeeds
@@ -104,7 +131,7 @@ namespace DSAMate.API.Tests
 
             // Assert (HTTP 400 Bad Request)
             Assert.IsInstanceOfType(result, typeof(BadRequestObjectResult));
-            Assert.AreEqual("Something went wrong", (result as BadRequestObjectResult)?.Value);
+            Assert.AreEqual("Role 'InvalidRole' does not exist", ((result as BadRequestObjectResult)?.Value as DefaultResponseDTO).Response);
         }
 
         // --- LOGIN (POST /Login) Tests ---
@@ -113,11 +140,11 @@ namespace DSAMate.API.Tests
         public async Task Login_ReturnsOk_WithJwtToken_WhenCredentialsAreValid()
         {
             // Arrange
-            var loginDto = new LoginRequestDTO { Username = _sampleUser.Email!, Password = "ValidPassword" };
+            var loginDto = new LoginRequestDTO { EmailAddress = _sampleUser.Email!, Password = "ValidPassword" };
             const string expectedToken = "MockJwtTokenString";
 
             // Setup 1: Find user by email succeeds
-            _mockUserManager.Setup(um => um.FindByEmailAsync(loginDto.Username))
+            _mockUserManager.Setup(um => um.FindByEmailAsync(loginDto.EmailAddress))
                 .ReturnsAsync(_sampleUser);
 
             // Setup 2: Password check succeeds
@@ -150,18 +177,23 @@ namespace DSAMate.API.Tests
         public async Task Login_ReturnsBadRequest_WhenUserDoesNotExist()
         {
             // Arrange
-            var loginDto = new LoginRequestDTO { Username = "nonexistent@user.com", Password = "P" };
+            var loginDto = new LoginRequestDTO { EmailAddress = "nonexistent@user.com", Password = "P" };
 
             // Setup: Find user returns null
-            _mockUserManager.Setup(um => um.FindByEmailAsync(loginDto.Username))
+            _mockUserManager.Setup(um => um.FindByEmailAsync(loginDto.EmailAddress))
                 .ReturnsAsync((IdentityUser?)null);
 
-            // Act
+             // Act
             var result = await _controller.LoginRequest(loginDto);
+            Assert.IsInstanceOfType(result, typeof(BadRequestObjectResult));
+            var badRequestObject = result as BadRequestObjectResult;
 
             // Assert (HTTP 400 Bad Request)
-            Assert.IsInstanceOfType(result, typeof(BadRequestObjectResult));
-            Assert.AreEqual("Incorrect username", (result as BadRequestObjectResult)?.Value);
+            Assert.IsNotNull((result as BadRequestObjectResult)?.Value);
+
+            var responseContent = badRequestObject.Value as DefaultResponseDTO;
+
+            Assert.AreEqual("Incorrect email", responseContent.Response);
 
             // Verify no password check was performed
             _mockUserManager.Verify(um => um.CheckPasswordAsync(It.IsAny<IdentityUser>(), It.IsAny<string>()), Times.Never());
@@ -171,10 +203,10 @@ namespace DSAMate.API.Tests
         public async Task Login_ReturnsBadRequest_WhenPasswordIsIncorrect()
         {
             // Arrange
-            var loginDto = new LoginRequestDTO { Username = _sampleUser.Email!, Password = "WrongPassword" };
+            var loginDto = new LoginRequestDTO { EmailAddress = _sampleUser.Email!, Password = "WrongPassword" };
 
             // Setup 1: Find user succeeds
-            _mockUserManager.Setup(um => um.FindByEmailAsync(loginDto.Username))
+            _mockUserManager.Setup(um => um.FindByEmailAsync(loginDto.EmailAddress))
                 .ReturnsAsync(_sampleUser);
 
             // Setup 2: Password check fails
@@ -183,10 +215,15 @@ namespace DSAMate.API.Tests
 
             // Act
             var result = await _controller.LoginRequest(loginDto);
+            Assert.IsInstanceOfType(result, typeof(BadRequestObjectResult));
+            var badRequestObject = result as BadRequestObjectResult;
 
             // Assert (HTTP 400 Bad Request)
-            Assert.IsInstanceOfType(result, typeof(BadRequestObjectResult));
-            Assert.AreEqual("Incorrect password!", (result as BadRequestObjectResult)?.Value);
+            Assert.IsNotNull((result as BadRequestObjectResult)?.Value);
+
+            var responseContent = badRequestObject.Value as DefaultResponseDTO;
+
+            Assert.AreEqual("Incorrect password!", responseContent.Response);
 
             // Verify token service was NOT called
             _mockAuthTokenService.Verify(ats => ats.GetAuthToken(It.IsAny<IdentityUser>(), It.IsAny<List<string>>()), Times.Never());

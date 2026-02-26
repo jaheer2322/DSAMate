@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 using Moq;
 using System.Security.Claims;
 
-namespace DSAMate.API.Tests
+namespace DSAMate.API.Tests.UnitTests
 {
     [TestClass]
     public class QuestionsControllerTests

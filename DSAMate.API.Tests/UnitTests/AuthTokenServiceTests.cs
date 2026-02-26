@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.JsonWebTokens;
 
-namespace DSAMate.API.Tests
+namespace DSAMate.API.Tests.UnitTests
 {
     [TestClass]
     public sealed class AuthTokenServiceTests
@@ -46,7 +46,7 @@ namespace DSAMate.API.Tests
             var expectedTime = DateTime.UtcNow.AddDays(1);
             Assert.IsTrue(token.ValidTo.ToUniversalTime().Subtract(expectedTime).Duration().TotalSeconds < 5);
 
-            var emailClaim = token.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Email);
+            var emailClaim = token.Claims.FirstOrDefault(c => c.Type == "Email");
             Assert.IsNotNull(emailClaim);
             Assert.AreEqual(_user.Email, emailClaim.Value);
 
