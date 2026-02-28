@@ -1,120 +1,110 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import QuestionRow from "./QuestionRow";
 import SearchBar from "./SearchBar";
+import Recommendation from "./Recommendation";
+import * as apiClient from "../apiClient";
 
-let questionsList = [
-  {
-    id: "1f6d2e9a-1c3b-4a5a-9d2e-111111111111",
-    title: "Two Sum",
-    Description:
-      "Given an array of integers and a target value, return indices of the two numbers such that they add up to the target.",
-    difficulty: "Easy",
-    topic: "Array",
-    Hint: "Use a hash map to store visited numbers and their indices.",
-    solved: true,
-    solvedAt: "2026-01-15T10:30:00Z",
-  },
-  {
-    id: "2a8c4c1e-9e4b-4d6c-8f3a-222222222222",
-    title: "Valid Parentheses",
-    Description: "Check if the input string containing brackets is valid.",
-    difficulty: "Easy",
-    topic: "Stack",
-    Hint: "Push opening brackets onto a stack and match them with closing ones.",
-    solved: true,
-    solvedAt: "2026-01-16T09:15:00Z",
-  },
-  {
-    id: "3b7e2f6d-3a9e-4e1b-b4c8-333333333333",
-    title: "Best Time to Buy and Sell Stock",
-    Description:
-      "Find the maximum profit you can achieve from buying and selling a stock once.",
-    difficulty: "Easy",
-    topic: "Array",
-    Hint: "Track the minimum price so far while iterating.",
-    solved: false,
-    solvedAt: null,
-  },
-  {
-    id: "4c9a1d2e-5f6b-4a2c-9b1d-444444444444",
-    title: "Longest Substring Without Repeating Characters",
-    Description:
-      "Find the length of the longest substring without repeating characters.",
-    difficulty: "Medium",
-    topic: "Sliding Window",
-    Hint: "Use two pointers and a set or map to track characters.",
-    solved: true,
-    solvedAt: "2026-01-18T14:45:00Z",
-  },
-  {
-    id: "5d3e8a2b-7c4f-4e9a-a1d6-555555555555",
-    title: "Binary Search",
-    Description:
-      "Search for a target value in a sorted array using binary search.",
-    difficulty: "Easy",
-    topic: "Binary Search",
-    Hint: "Repeatedly divide the search space in half.",
-    solved: true,
-    solvedAt: "2026-01-19T11:20:00Z",
-  },
-  {
-    id: "6e4b9c2a-1d7f-4b6e-8a3c-666666666666",
-    title: "Merge Two Sorted Lists",
-    Description: "Merge two sorted linked lists and return the merged list.",
-    difficulty: "Easy",
-    topic: "Linked List",
-    Hint: "Use a dummy node to simplify pointer handling.",
-    solved: false,
-    solvedAt: null,
-  },
-  {
-    id: "7f1d8b4c-3a2e-4d9f-b6c1-777777777777",
-    title: "Maximum Subarray",
-    Description: "Find the contiguous subarray with the largest sum.",
-    difficulty: "Medium",
-    topic: "Dynamic Programming",
-    Hint: "Use Kadane’s algorithm.",
-    solved: true,
-    solvedAt: "2026-01-22T16:00:00Z",
-  },
-  {
-    id: "8a2c7d9e-6b4f-4e1a-9c8d-888888888888",
-    title: "Invert Binary Tree",
-    Description: "Invert a binary tree by swapping left and right children.",
-    difficulty: "Easy",
-    topic: "Tree",
-    Hint: "Use recursion or BFS/DFS traversal.",
-    solved: false,
-    solvedAt: null,
-  },
-  {
-    id: "9b6e1a4d-2f8c-4c9b-8e7a-999999999999",
-    title: "Detect Cycle in Linked List",
-    Description: "Determine if a linked list has a cycle.",
-    difficulty: "Medium",
-    topic: "Linked List",
-    Hint: "Use slow and fast pointers (Floyd’s cycle detection).",
-    solved: true,
-    solvedAt: "2026-01-25T13:10:00Z",
-  },
-  {
-    id: "a1c9d4e7-8b2f-4a6e-9d5b-aaaaaaaaaaaa",
-    title: "Median of Two Sorted Arrays",
-    Description: "Find the median of two sorted arrays in logarithmic time.",
-    difficulty: "Hard",
-    topic: "Binary Search",
-    Hint: "Apply binary search on the smaller array to partition correctly.",
-    solved: false,
-    solvedAt: null,
-  },
-];
+const difficultyFilters = ["All", "Easy", "Medium", "Hard"];
+const solvedFilters = ["All", "Solved", "Unsolved"];
 
 export default function QuestionList() {
   const [revealAll, setRevealAll] = useState(false);
-  const initialQuestions = questionsList.map((q) => {
-    return { ...q, reveal: revealAll };
-  });
-  const [questions, setQuestions] = useState(initialQuestions);
+  const [allQuestionsSolved, setAllQuestionsSolved] = useState(false);
+  const [questions, setQuestions] = useState([]);
+  const [moreToLoad, setMoreToLoad] = useState(true);
+  const [query, setQuery] = useState("");
+  const [sortDirection, setSortDirection] = useState("asc");
+  const [difficultyFilter, setDifficultyFilter] = useState("All");
+  const [solvedFilter, setSolvedFilter] = useState("All");
+  const [errorMessage, setErrorMessage] = useState("");
+  const [page, setPage] = useState(1);
+
+  async function fetchQuestions() {
+    try {
+      const searchParams = new URLSearchParams();
+      if (query.trim()) {
+        searchParams.set("search", query.trim());
+      }
+      if (difficultyFilter !== "All") {
+        searchParams.set("difficulty", difficultyFilter);
+      }
+      if (solvedFilter !== "All") {
+        searchParams.set(
+          "solved",
+          solvedFilter === "Solved" ? "true" : "false",
+        );
+      }
+
+      searchParams.set("sortBy", "title");
+      searchParams.set("isAscending", String(sortDirection === "asc"));
+      searchParams.set("pageNumber", `${page}`);
+      searchParams.set("pageSize", "10");
+
+      const path = `/questions?${searchParams.toString()}`;
+      const response = await apiClient.get(path);
+      const data = response.data ?? [];
+      const newQuestions = data.map((q) => ({
+        id: q.id ?? q.Id,
+        title: q.title ?? q.Title,
+        description: q.description ?? q.description,
+        topic: q.topic ?? q.Topic,
+        difficulty: q.difficulty ?? q.Difficulty,
+        solved: q.solved ?? q.Solved,
+        solvedAt: q.solvedAt ?? q.SolvedAt,
+        reveal: false,
+      }));
+
+      if (newQuestions.length == 0) setMoreToLoad(false);
+      else setMoreToLoad(true);
+
+      if (page === 1) {
+        setQuestions(newQuestions);
+      } else {
+        setQuestions((prev) => [...prev, ...newQuestions]);
+      }
+
+      setErrorMessage("");
+    } catch (error) {
+      if (error.name !== "AbortError") {
+        setErrorMessage("Could not fetch questions. Please ");
+      }
+    }
+  }
+
+  async function fetchRandom() {
+    try {
+      const path = "/questions/random";
+      const response = await apiClient.get(path);
+      const data = response.data ?? [];
+      if (data.length === 0) {
+        setQuestions([]);
+        setAllQuestionsSolved(true);
+      } else {
+        const randomQuestion = {
+          id: data.id ?? data.Id,
+          title: data.title ?? data.Title,
+          description: data.description ?? data.description,
+          topic: data.topic ?? data.Topic,
+          difficulty: data.difficulty ?? data.Difficulty,
+          solved: data.solved ?? data.Solved,
+          solvedAt: data.solvedAt ?? data.SolvedAt,
+          reveal: false,
+        };
+        setQuestions([randomQuestion]);
+        setAllQuestionsSolved(false);
+      }
+      setMoreToLoad(false);
+    } catch (error) {
+      if (error.name !== "AbortError") {
+        setErrorMessage("Could not fetch questions. Please ");
+      }
+    }
+  }
+
+  async function handleLoadMore() {
+    setPage((prev) => prev + 1);
+  }
+
   function handleTopicRevealAll() {
     setRevealAll((prevRevealAll) => {
       const currRevealAll = !prevRevealAll;
@@ -126,6 +116,7 @@ export default function QuestionList() {
       return currRevealAll;
     });
   }
+
   function toggleTopicReveal(id) {
     setQuestions((prev) =>
       prev.map((q) => {
@@ -133,9 +124,76 @@ export default function QuestionList() {
       }),
     );
   }
+
+  function handleSolvedToggle(id) {
+    setQuestions((prev) =>
+      prev.map((q) => {
+        return q.id === id
+          ? {
+              ...q,
+              solved: !q.solved,
+              solvedAt: !q.solved ? new Date().toISOString() : null,
+            }
+          : q;
+      }),
+    );
+  }
+
+  function handleDifficultyFilter() {
+    const index = difficultyFilters.indexOf(difficultyFilter);
+    setDifficultyFilter(
+      difficultyFilters[(index + 1) % difficultyFilters.length],
+    );
+    setPage(1);
+  }
+
+  function handleSolvedFilter() {
+    const index = solvedFilters.indexOf(solvedFilter);
+    setSolvedFilter(solvedFilters[(index + 1) % solvedFilters.length]);
+    setPage(1);
+  }
+
+  function handleReset() {
+    setQuery("");
+    setSortDirection("asc");
+    setDifficultyFilter("All");
+    setSolvedFilter("All");
+    setErrorMessage("");
+    setMoreToLoad(true);
+    setQuestions([]);
+
+    if (page === 1) fetchQuestions();
+    else setPage(1);
+  }
+
+  useEffect(() => {
+    fetchQuestions();
+  }, [query, sortDirection, difficultyFilter, solvedFilter, page]);
+
   return (
     <>
-      <SearchBar />
+      <Recommendation fetchRandom={fetchRandom} />
+      <SearchBar
+        query={query}
+        onQueryChange={setQuery}
+        sortDirection={sortDirection}
+        onToggleSort={() => {
+          setSortDirection((prev) => (prev === "asc" ? "desc" : "asc"));
+          setPage(1);
+        }}
+        difficultyFilter={difficultyFilter}
+        onToggleDifficulty={handleDifficultyFilter}
+        solvedFilter={solvedFilter}
+        onToggleSolvedFilter={handleSolvedFilter}
+      />
+      {errorMessage && (
+        <p className="error-message">
+          {errorMessage}{" "}
+          <a href="#" onClick={() => location.reload()}>
+            reload
+          </a>
+        </p>
+      )}
       <div className="table-container">
         <table>
           <thead>
@@ -164,12 +222,29 @@ export default function QuestionList() {
                 key={q.id}
                 {...q}
                 toggleTopicReveal={toggleTopicReveal}
+                onSolvedToggle={handleSolvedToggle}
               />
             ))}
           </tbody>
         </table>
       </div>
-      <button className="load-more">Load more</button>
+      {allQuestionsSolved ? (
+        <p style={{ color: "lightgreen  " }}>
+          You have solved all the questions! Reset your progress from your
+          profile to get an unsolved random question.
+        </p>
+      ) : (
+        ""
+      )}
+      {moreToLoad ? (
+        <button className="load-more" onClick={handleLoadMore}>
+          Load more
+        </button>
+      ) : (
+        <button className="load-more" onClick={handleReset}>
+          Reset
+        </button>
+      )}
     </>
   );
 }

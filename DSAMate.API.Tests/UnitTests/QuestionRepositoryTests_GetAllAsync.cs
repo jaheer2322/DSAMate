@@ -99,7 +99,7 @@ namespace DSAMate.API.Tests.UnitTests
         public async Task GetAllAsync_ReturnsPagedResults_WithDefaultOrdering()
         {
             // pageSize = 2, pageNumber = 2 -> should return 2 items: 3rd and 4th in default order
-            var result = await _repository.GetAllAsync(column: null, query: null, sortBy: null, isAscending: true, pageNumber: 2, pageSize: 2);
+            var result = await _repository.GetAllAsync(search: null, difficulty: null, topic: null, solved: null, sortBy: null, isAscending: true, pageNumber: 2, pageSize: 2);
 
             Assert.IsNotNull(result);
             Assert.AreEqual(2, result.Count);
@@ -117,7 +117,7 @@ namespace DSAMate.API.Tests.UnitTests
         public async Task GetAllAsync_Filters_ByTitle_Contains_IgnoringCase()
         {
             // search for "epsilon" should match "Epsilon Problem"
-            var result = await _repository.GetAllAsync(column: "title", query: "epsilon", sortBy: null, isAscending: true, pageNumber: 1, pageSize: 10);
+            var result = await _repository.GetAllAsync(search: "epsilon", difficulty: null, topic: null, solved: null, sortBy: null, isAscending: true, pageNumber: 1, pageSize: 10);
 
             Assert.IsNotNull(result);
             Assert.AreEqual(1, result.Count);
@@ -130,7 +130,7 @@ namespace DSAMate.API.Tests.UnitTests
         public async Task GetAllAsync_Sorts_ByTitle_Descending()
         {
             // sortBy title, descending => first should be "Zeta Problem"
-            var result = await _repository.GetAllAsync(column: null, query: null, sortBy: "title", isAscending: false, pageNumber: 1, pageSize: 10);
+            var result = await _repository.GetAllAsync(search: null, difficulty: null, topic: null, solved: null, sortBy: "title", isAscending: false, pageNumber: 1, pageSize: 10);
 
             Assert.IsNotNull(result);
             Assert.IsTrue(result.Count >= 1);
@@ -140,7 +140,7 @@ namespace DSAMate.API.Tests.UnitTests
         [TestMethod]
         public async Task GetAllAsync_MarksSolvedQuestions_ForCurrentUser()
         {
-            var result = await _repository.GetAllAsync(column: null, query: null, sortBy: null, isAscending: true, pageNumber: 1, pageSize: 20);
+            var result = await _repository.GetAllAsync(search: null, difficulty: null, topic: null, solved: null, sortBy: null, isAscending: true, pageNumber: 1, pageSize: 20);
 
             // "Beta Problem" was marked solved in SeedData
             var solvedDto = result.FirstOrDefault(r => r.Title == "Beta Problem");

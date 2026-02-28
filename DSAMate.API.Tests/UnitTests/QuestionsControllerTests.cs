@@ -105,26 +105,6 @@ namespace DSAMate.API.Tests.UnitTests
             _mockQuestionRepository.Verify(repo => repo.CreateAsync(createDto), Times.Once());
         }
 
-        // --- 3. GET ALL (Query Parameter & Validation) Tests ---
-
-        [TestMethod]
-        public async Task GetAll_ReturnsBadRequest_ForInvalidFilterColumn()
-        {
-            // Arrange: Invalid column name (e.g., 'category')
-            string invalidColumn = "category";
-
-            // Act
-            var result = await _controller.GetAll(invalidColumn, "test", null, true, 1, 10);
-
-            // Assert (HTTP 400 Bad Request)
-            Assert.IsInstanceOfType(result, typeof(BadRequestObjectResult));
-            var badRequestResult = result as BadRequestObjectResult;
-            Assert.IsTrue(badRequestResult.Value.ToString().Contains("Invalid column to filter category. Allowed columns are: title, difficulty, topic, solved"));
-
-            // Verify that the repository query was NOT called
-            _mockQuestionRepository.Verify(repo => repo.GetAllAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<bool>(), It.IsAny<int>(), It.IsAny<int>()), Times.Never());
-        }
-
         [TestMethod]
         public async Task GetAll_ReturnsBadRequest_ForInvalidSortColumn()
         {
@@ -132,7 +112,7 @@ namespace DSAMate.API.Tests.UnitTests
             string invalidSortBy = "description";
 
             // Act
-            var result = await _controller.GetAll(null, null, invalidSortBy, true, 1, 10);
+            var result = await _controller.GetAll(null, null, null, null, invalidSortBy, true, 1, 10);
 
             // Assert (HTTP 400 Bad Request)
             Assert.IsInstanceOfType(result, typeof(BadRequestObjectResult));
@@ -140,7 +120,7 @@ namespace DSAMate.API.Tests.UnitTests
             Assert.IsTrue(badRequestResult.Value.ToString().Contains("Invalid column to sortBy description. Allowed column is title"));
 
             // Verify that the repository query was NOT called
-            _mockQuestionRepository.Verify(repo => repo.GetAllAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<bool>(), It.IsAny<int>(), It.IsAny<int>()), Times.Never());
+            _mockQuestionRepository.Verify(repo => repo.GetAllAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<bool>(), It.IsAny<string>(), It.IsAny<bool>(), It.IsAny<int>(), It.IsAny<int>()), Times.Never());
         }
 
         [TestMethod]
@@ -148,18 +128,18 @@ namespace DSAMate.API.Tests.UnitTests
         {
             // Arrange
             var listDto = new List<QuestionDTO> { _sampleQuestionDto };
-            _mockQuestionRepository.Setup(repo => repo.GetAllAsync("topic", "array", "title", true, 2, 5))
+            _mockQuestionRepository.Setup(repo => repo.GetAllAsync(null, null, "array", null, "title", true, 2, 5))
                 .ReturnsAsync(listDto);
 
             // Act
-            var result = await _controller.GetAll("topic", "array", "title", true, 2, 5);
+            var result = await _controller.GetAll(null, null, "array", null, "title", true, 2, 5);
 
             // Assert (HTTP 200 OK)
             Assert.IsInstanceOfType(result, typeof(OkObjectResult));
 
             // Verify the repository method was called with the exact parameters
             _mockQuestionRepository.Verify(
-                repo => repo.GetAllAsync("topic", "array", "title", true, 2, 5),
+                repo => repo.GetAllAsync(null, null, "array", null, "title", true, 2, 5),
                 Times.Once());
         }
 

@@ -1,19 +1,18 @@
 const baseUrl = "https://localhost:7197/api";
-const defaultHeaders = {
-  "Content-type": "application/json",
-};
-export const post = async (path, body) => {
-  const token = localStorage.getItem("jwt_token_storage_key");
 
+function buildHeaders() {
+  const headers = {
+    "Content-type": "application/json",
+  };
+
+  const token = localStorage.getItem("jwt_token_storage_key");
   if (token) {
     headers.Authorization = `Bearer ${token}`;
   }
-  const response = await fetch(`${baseUrl}${path}`, {
-    body: JSON.stringify(body),
-    method: "POST",
-    headers: defaultHeaders,
-  });
+  return headers;
+}
 
+async function parseResponse(response) {
   let data = null;
   try {
     data = await response.json();
@@ -28,4 +27,23 @@ export const post = async (path, body) => {
   }
 
   return { data };
+}
+
+export const post = async (path, body) => {
+  const response = await fetch(`${baseUrl}${path}`, {
+    body: JSON.stringify(body),
+    method: "POST",
+    headers: buildHeaders(),
+  });
+
+  return parseResponse(response);
+};
+
+export const get = async (path) => {
+  const response = await fetch(`${baseUrl}${path}`, {
+    method: "GET",
+    headers: buildHeaders(),
+  });
+
+  return parseResponse(response);
 };

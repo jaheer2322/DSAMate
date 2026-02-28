@@ -11,15 +11,11 @@ namespace DSAMate.API.Controllers
     [EnableCors("AllowSpecificOrigin")]
     public class QuestionsController : ControllerBase
     {
-        private readonly List<string> queryableColumns = new List<string> {
-            "title",
+        private readonly List<string> allowedParameters = new List<string> {
+            "search",
             "difficulty",
             "topic",
-            "solved"
-        };
-        private readonly List<string> allowedParameters = new List<string> {
-            "column",
-            "query",
+            "solved",
             "sortBy",
             "isAscending",
             "pageNumber",
@@ -46,7 +42,30 @@ namespace DSAMate.API.Controllers
             var questionDTOs = await _questionRepository.CreateBulkAsync(createQuestionDTOs);
             return Ok(questionDTOs);
         }
-        [HttpGet("{id}")]
+        [HttpGet("random")]
+        [Authorize(Roles = "Admin, User")]
+        public async Task<IActionResult> Random()
+        {
+            var questionDTO = await _questionRepository.GetRandomAsync();
+            return Ok(questionDTO);
+        }
+
+        [HttpGet("solved")]
+        [Authorize(Roles = "Admin, User")]
+        public async Task<IActionResult> SolvedQuestions()
+        {
+            var questionsSolved = await _questionRepository.GetUserSolvedQuestionsAsync();
+            return Ok(questionsSolved);
+        }
+
+        [HttpGet("progress")]
+        [Authorize(Roles = "Admin, User")]
+        public async Task<IActionResult> Progress()
+        {
+            var progress = await _questionRepository.GetProgressForUserAsync();
+            return Ok(progress);
+        }
+        [HttpGet("{id:guid}")]
         [Authorize(Roles = "Admin, User")]
         public async Task<IActionResult> Get(Guid id)
         {
@@ -60,11 +79,13 @@ namespace DSAMate.API.Controllers
 
         [HttpGet]
         [Authorize(Roles = "Admin, User")]
-        public async Task<IActionResult> GetAll([FromQuery] string? column,
-                                                [FromQuery] string? query, 
-                                                [FromQuery] string? sortBy, 
-                                                [FromQuery] bool isAscending = true, 
-                                                [FromQuery] int pageNumber = 1, 
+        public async Task<IActionResult> GetAll([FromQuery] string? search,
+                                                [FromQuery] string? difficulty,
+                                                [FromQuery] string? topic,
+                                                [FromQuery] bool? solved,
+                                                [FromQuery] string? sortBy,
+                                                [FromQuery] bool isAscending = true,
+                                                [FromQuery] int pageNumber = 1,
                                                 [FromQuery] int pageSize = 10)
         {
             // Check if any extra query parameters are passed
@@ -74,18 +95,18 @@ namespace DSAMate.API.Controllers
                 return BadRequest(new { Response = $"Invalid query parameters: {string.Join(", ", extraParameters)}. Allowed parameters are: {string.Join(", ", allowedParameters)}" });
             }
 
-            // Validate columns passed in query
-            if (string.IsNullOrWhiteSpace(column) == false && !queryableColumns.Contains(column.ToLower()))
+            if (string.IsNullOrWhiteSpace(sortBy) == false && sortBy.ToLower() != "title" && sortBy.ToLower() != "difficulty")
             {
-                return BadRequest(new { Response = $"Invalid column to filter {column}. Allowed columns are: {string.Join(", ", queryableColumns)}" });
+                return BadRequest(new { Response = $"Invalid column to sortBy {sortBy}. Allowed column is title" });
             }
 
-            if (string.IsNullOrWhiteSpace(sortBy) == false && sortBy.ToLower() != "title")
+            if (string.IsNullOrWhiteSpace(difficulty) == false && Enum.TryParse<Models.Domains.Difficulty>(difficulty, true, out _) == false)
             {
-                return BadRequest(new { Response = $"Invalid column to sortBy {sortBy}. Allowed column is title" }); 
+                return BadRequest(new { Response = "Invalid difficulty filter. Allowed values are Easy, Medium, Hard" });
             }
+            
+            var questionDTOs = await _questionRepository.GetAllAsync(search, difficulty, topic, solved, sortBy, isAscending, pageNumber, pageSize);
 
-            var questionDTOs = await _questionRepository.GetAllAsync(column, query, sortBy, isAscending, pageNumber, pageSize);
             return Ok(questionDTOs);
         }
 
@@ -97,20 +118,5 @@ namespace DSAMate.API.Controllers
             return Ok();
         }
 
-        [HttpGet("/solved")]
-        [Authorize(Roles = "Admin, User")]
-        public async Task<IActionResult> SolvedQuestions()
-        {
-            var questionsSolved = await _questionRepository.GetUserSolvedQuestionsAsync();
-            return Ok(questionsSolved);
-        }
-
-        [HttpGet("/progress")]
-        [Authorize(Roles = "Admin, User")]
-        public async Task<IActionResult> Progress()
-        {
-            var progress = await _questionRepository.GetProgressForUserAsync();
-            return Ok(progress);
-        }
     }
 }

@@ -1,4 +1,4 @@
-export default function Recommendation() {
+export default function Recommendation({ fetchRandom }) {
   return (
     <div class="recommendation">
       <div class="recommendation-text">
@@ -15,10 +15,10 @@ export default function Recommendation() {
           <p>Easy</p>
         </div>
         <div class="recommendation-text">
-          <h3>Pick a random:</h3>
+          <h3>Pick random (unsolved):</h3>
         </div>
         <div class="card">
-          <button className="random" onClick={() => console.log("clicked")}>
+          <button className="random" onClick={fetchRandom}>
             <h2 class="bi bi-shuffle"></h2>
           </button>
         </div>

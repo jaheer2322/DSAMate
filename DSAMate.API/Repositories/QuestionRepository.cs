@@ -38,81 +38,67 @@ namespace DSAMate.API.Repositories
         }
 
         public async Task<List<QuestionDTO>> GetAllAsync(
-    string? column,
-    string? query,
-    string? sortBy,
-    bool isAscending,
-    int pageNumber,
-    int pageSize)
+        string? search,
+        string? difficulty,
+        string? topic,
+        bool? solved,
+        string? sortBy,
+        bool isAscending,
+        int pageNumber,
+        int pageSize)
         {
             var userId = _userContext.GetUserId();
-
-            // Base query
             var questionsQuery = _dbContext.Questions.AsNoTracking();
 
-            // Filtering
-            if (!string.IsNullOrWhiteSpace(column) && !string.IsNullOrWhiteSpace(query))
+            // 1. Search (Title, Description, Topic)
+            if (!string.IsNullOrWhiteSpace(search))
             {
-                query = query.ToLower();
-
-                if (column.ToLower() == "solved")
-                {
-                    if (query == "true")
-                    {
-                        questionsQuery = questionsQuery.Where(q =>
-                            _dbContext.UserQuestionStatuses.Any(uqs =>
-                                uqs.QuestionId == q.Id &&
-                                uqs.UserId == userId &&
-                                uqs.IsSolved));
-                    }
-                    else
-                    {
-                        questionsQuery = questionsQuery.Where(q =>
-                            !_dbContext.UserQuestionStatuses.Any(uqs =>
-                                uqs.QuestionId == q.Id &&
-                                uqs.UserId == userId &&
-                                uqs.IsSolved));
-                    }
-                }
-                else
-                {
-                    questionsQuery = column.ToLower() switch
-                    {
-                        "title" =>
-                            questionsQuery.Where(q =>
-                                q.Title.ToLower().Contains(query)),
-
-                        "difficulty" =>
-                            Enum.TryParse<Difficulty>(query, true, out var difficulty)
-                                ? questionsQuery.Where(q => q.Difficulty == difficulty)
-                                : questionsQuery.Where(q => false),
-
-                        "topic" =>
-                            Enum.TryParse<Topic>(query, true, out var topic)
-                                ? questionsQuery.Where(q => q.Topic == topic)
-                                : questionsQuery.Where(q => false),
-
-                        _ => questionsQuery
-                    };
-                }
+                var normalizedSearch = search.ToLower();
+                questionsQuery = questionsQuery.Where(q =>
+                    q.Title.ToLower().Contains(normalizedSearch) ||
+                    q.Description.ToLower().Contains(normalizedSearch) ||
+                    q.Topic.ToString().ToLower().Contains(normalizedSearch));
             }
 
-            // Sorting
+            // 2. Difficulty Filter
+            if (!string.IsNullOrWhiteSpace(difficulty) && Enum.TryParse<Difficulty>(difficulty, true, out var diffEnum))
+            {
+                questionsQuery = questionsQuery.Where(q => q.Difficulty == diffEnum);
+            }
+
+            // 3. Topic Filter
+            if (!string.IsNullOrWhiteSpace(topic) && Enum.TryParse<Topic>(topic, true, out var topicEnum))
+            {
+                questionsQuery = questionsQuery.Where(q => q.Topic == topicEnum);
+            }
+
+            // 4. Solved Status Filter
+            if (solved.HasValue)
+            {
+                questionsQuery = questionsQuery.Where(q =>
+                    _dbContext.UserQuestionStatuses.Any(uqs =>
+                        uqs.QuestionId == q.Id &&
+                        uqs.UserId == userId &&
+                        uqs.IsSolved) == solved.Value);
+            }
+
+            // 5. Sorting
             if (!string.IsNullOrWhiteSpace(sortBy))
             {
                 questionsQuery = (sortBy.ToLower(), isAscending) switch
                 {
                     ("title", true) => questionsQuery.OrderBy(q => q.Title),
                     ("title", false) => questionsQuery.OrderByDescending(q => q.Title),
+                    ("difficulty", true) => questionsQuery.OrderBy(q => q.Difficulty),
+                    ("difficulty", false) => questionsQuery.OrderByDescending(q => q.Difficulty),
                     _ => questionsQuery
                 };
             }
 
-            // Pagination
+            // 6. Pagination & Projection
             var skip = (pageNumber - 1) * pageSize;
 
-            // Final projection (JOIN / EXISTS style)
-            var result = await questionsQuery
+            return await questionsQuery
                 .Skip(skip)
                 .Take(pageSize)
                 .Select(q => new QuestionDTO
@@ -122,24 +108,17 @@ namespace DSAMate.API.Repositories
                     Difficulty = q.Difficulty.ToString(),
                     Topic = q.Topic.ToString(),
                     Description = q.Description,
-
                     Solved = _dbContext.UserQuestionStatuses.Any(uqs =>
                         uqs.QuestionId == q.Id &&
                         uqs.UserId == userId &&
                         uqs.IsSolved),
-
                     SolvedAt = _dbContext.UserQuestionStatuses
-                        .Where(uqs =>
-                            uqs.QuestionId == q.Id &&
-                            uqs.UserId == userId &&
-                            uqs.IsSolved)
+                        .Where(uqs => uqs.QuestionId == q.Id && uqs.UserId == userId && uqs.IsSolved)
                         .Select(uqs => uqs.SolvedAt)
                         .FirstOrDefault(),
                     Hint = q.Hint,
                 })
                 .ToListAsync();
-
-            return result;
         }
 
         public async Task<QuestionDTO> CreateAsync(CreateQuestionDTO createQuestionDTO)
@@ -270,5 +249,38 @@ namespace DSAMate.API.Repositories
             return progress;
         }
 
+        public async Task<QuestionDTO> GetRandomAsync()
+        {
+            var userId = _userContext.GetUserId();
+            var unsolvedQuestions = _dbContext.Questions
+                .AsNoTracking()
+                .Where(q => !_dbContext.UserQuestionStatuses.Any(uqs =>
+                        uqs.QuestionId == q.Id &&
+                        uqs.UserId == userId &&
+                        uqs.IsSolved));
+
+            var questionsCount = unsolvedQuestions.Count();
+
+            var random = new Random();
+            int skipCount = random.Next(0, questionsCount);
+
+            return await unsolvedQuestions.Skip(skipCount).Take(1).Select(q => new QuestionDTO
+            {
+                Id = q.Id,
+                Title = q.Title,
+                Difficulty = q.Difficulty.ToString(),
+                Topic = q.Topic.ToString(),
+                Description = q.Description,
+                Solved = _dbContext.UserQuestionStatuses.Any(uqs =>
+                    uqs.QuestionId == q.Id &&
+                    uqs.UserId == userId &&
+                    uqs.IsSolved),
+                SolvedAt = _dbContext.UserQuestionStatuses
+                        .Where(uqs => uqs.QuestionId == q.Id && uqs.UserId == userId && uqs.IsSolved)
+                        .Select(uqs => uqs.SolvedAt)
+                        .FirstOrDefault(),
+                Hint = q.Hint,
+            }).FirstOrDefaultAsync();
+        }
     }
 }

@@ -74,8 +74,13 @@ main {
 }
 
 .error-message {
-  color: #b42318;
+  color: #f03325;
+  text-shadow: 0px 0px 20px #000000;
   margin: 0;
+}
+
+.error-message a {
+  color: rgb(38, 38, 218);
 }
 
 .success-message {
@@ -312,18 +317,24 @@ header:hover {
 }
 
 .search-bar {
-  border-radius: 10px;
-  height: 20px;
+  border-radius: 15px;
+  height: 30px;
   width: 40vw;
   max-width: 500px;
-  border: none;
   background: #e5e5e5;
 }
 
-.search-form .search-button {
-  color: #e5e5e5;
+.difficulty-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
   background: transparent;
   border: none;
+}
+
+.difficulty-button img {
+  height: 25px;
+  width: 25px;
 }
 
 .search-form button,
@@ -370,18 +381,33 @@ header:hover {
   transform: scale(0.9);
 }
 
+.search-form label {
+  padding: 2px 5px;
+  border-radius: 8px;
+  border: 1px solid #585d62;
+  /* background: #1f2933; */
+}
+
+.search-form label:hover {
+  cursor: pointer;
+}
+
 table {
   width: 100%;
   background: #25343f;
   border-collapse: collapse;
+}
+tbody {
+  overflow-x: auto;
+  overflow-y: auto;
 }
 
 .table-container {
   width: 80vw;
   max-width: 900px;
   border-radius: 12px;
+  /* overflow: hidden; */
   background-color: #bfc9d1;
-  overflow-x: auto;
 }
 
 table thead {
@@ -397,6 +423,34 @@ table th {
 
 table td {
   padding: 5px;
+}
+
+table .question-title {
+  width: 60%;
+  position: relative;
+  cursor: help;
+}
+
+table .question-description-tooltip {
+  position: absolute;
+  left: 0;
+  top: calc(100% + 4px);
+  z-index: 5;
+  width: min(360px, 75vw);
+  padding: 8px;
+  border-radius: 8px;
+  background: #1f2933;
+  color: #e5e5e5;
+  font-size: 0.85rem;
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.3);
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.2s ease;
+}
+
+table .question-title:hover .question-description-tooltip {
+  opacity: 1;
+  visibility: visible;
 }
 
 table tr {
@@ -479,7 +533,7 @@ table .Hard {
   width: 100px;
   border-radius: 12px;
   background: #e5e5e5;
-  transition: 0.2s ease;
+  transition: 0.05s ease;
 }
 
 footer {
@@ -500,7 +554,7 @@ footer {
   }
 }
 
-@media (max-width: 700px) {
+@media (max-width: 800px) {
   .recommendation .cards {
     flex-direction: column;
     align-items: center;
