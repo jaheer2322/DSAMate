@@ -22,11 +22,11 @@ main {
 
 .login-page-container {
   margin: 0;
-  height: 80vh;
   min-height: 100vh;
   display: flex;
+  flex-direction: row;
   align-items: center;
-  justify-content: center;
+  justify-content: space-around;
   background: linear-gradient(135deg, #101920, #25343f, #314654);
 }
 
@@ -186,12 +186,16 @@ header:hover {
 .login {
   margin: 50px 0 0;
 }
-
+.main-container {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-around;
+  background: var(--main-background-color);
+}
 .main {
   margin: 50px 0 0;
   padding: 20px 0 20px;
   min-height: 100vh;
-  background: var(--main-background-color);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -240,7 +244,6 @@ header:hover {
 
 .recommendation-text h3 {
   margin: 0;
-  /* text-align: center; */
   color: #ff9b51;
   font-weight: 330;
   font-family: var(--logo-font);
@@ -249,13 +252,11 @@ header:hover {
 
 .cards {
   display: flex;
-  gap: 20px;
-  height: 80%;
-  width: 80%;
 }
 
 .card {
-  width: 50%;
+  cursor: pointer;
+  width: 100px;
   box-shadow: 2px 2px 5px 0px #222;
   padding: 5px 10px;
   border-radius: 12px;
@@ -264,8 +265,12 @@ header:hover {
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  cursor: pointer;
   transition: 0.2s ease;
+}
+
+.card button {
+  height: 100%;
+  width: 100%;
 }
 
 .card:active {
@@ -277,6 +282,9 @@ header:hover {
 }
 
 .card .random {
+  height: 100%;
+  width: 100%;
+  padding: 0;
   background: transparent;
   border: none;
   color: white;
@@ -385,7 +393,7 @@ header:hover {
   padding: 2px 5px;
   border-radius: 8px;
   border: 1px solid #585d62;
-  /* background: #1f2933; */
+  background: #373739;
 }
 
 .search-form label:hover {
@@ -564,4 +572,83 @@ footer {
     align-items: center;
     justify-content: center;
   }
+}
+
+.profile-overlay {
+  display: flex;
+  align-items: flex-start;
+  justify-content: flex-end;
+  padding: 80px 20px 20px;
+}
+.profile-panel {
+  width: 400px;
+  border-radius: 12px;
+  background: #1f2933;
+  color: #e5e5e5;
+  border: 1px solid #5d6a73;
+  padding: 16px;
+}
+
+.profile-panel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.close-profile {
+  border: none;
+  background: transparent;
+  color: #ff9b51;
+  font-size: 1.4rem;
+  cursor: pointer;
+}
+
+.profile-radar-chart {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+.profile-empty {
+  text-align: center;
+}
+
+.profile-legend {
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+  font-size: 0.85rem;
+}
+
+.legend-box {
+  width: 10px;
+  height: 10px;
+  display: inline-block;
+  margin-right: 5px;
+}
+
+.legend-total {
+  background: #ff9b51;
+}
+
+.legend-solved {
+  background: #38a578;
+}
+
+.reset-progress-button {
+  margin-top: 14px;
+  width: 100%;
+  border: none;
+  border-radius: 8px;
+  padding: 10px;
+  cursor: pointer;
+  background: #ff9b51;
+  color: #1f2933;
+  font-weight: 700;
+}
+
+.reset-progress-button:disabled {
+  cursor: wait;
+  opacity: 0.8;
 }

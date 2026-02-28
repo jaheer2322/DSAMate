@@ -35,7 +35,7 @@ namespace DSAMate.API.Controllers
             return Ok(questionDTO);
         }
 
-        [HttpPost("/bulk")]
+        [HttpPost("bulk")]
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> CreateBulk([FromBody] List<CreateQuestionDTO> createQuestionDTOs)
         {
@@ -118,5 +118,12 @@ namespace DSAMate.API.Controllers
             return Ok();
         }
 
+        [HttpPost("reset-progress")]
+        [Authorize(Roles = "Admin, User")]
+        public async Task<IActionResult> ResetProgress()
+        {
+            await _questionRepository.ResetProgressAsync();
+            return Ok();
+        }
     }
 }

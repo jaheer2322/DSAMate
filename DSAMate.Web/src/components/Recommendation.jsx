@@ -6,16 +6,7 @@ export default function Recommendation({ fetchRandom }) {
       </div>
       <div class="cards">
         <div class="recommendation-text">
-          <h3>Based on your progress:</h3>
-        </div>
-        <div class="card">
-          <a href="#">
-            <h2>Two Sum</h2>
-          </a>
-          <p>Easy</p>
-        </div>
-        <div class="recommendation-text">
-          <h3>Pick random (unsolved):</h3>
+          <h3>Pick unsolved random question:</h3>
         </div>
         <div class="card">
           <button className="random" onClick={fetchRandom}>

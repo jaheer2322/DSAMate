@@ -2,11 +2,16 @@
 {
     public enum Topic
     {
-        Array,
+        Arrays,
+        Hashing,
+        TwoPointers,
+        SlidingWindow,
+        BinarySearch,
         String,
         LinkedList,
-        Tree,
-        Graph,
+        BinaryTree,
+        Trees,
+        Graphs,
         DynamicProgramming,
         Greedy,
         Stack,

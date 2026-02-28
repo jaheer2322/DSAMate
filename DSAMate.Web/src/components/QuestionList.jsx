@@ -101,6 +101,16 @@ export default function QuestionList() {
     }
   }
 
+  async function markAsSolved(id) {
+    try {
+      await apiClient.post(`/questions/${id}/mark-solved`);
+    } catch (error) {
+      if (error.name !== "AbortError") {
+        setErrorMessage("Could not update the status. Please ");
+      }
+    }
+  }
+
   async function handleLoadMore() {
     setPage((prev) => prev + 1);
   }
@@ -125,18 +135,21 @@ export default function QuestionList() {
     );
   }
 
-  function handleSolvedToggle(id) {
-    setQuestions((prev) =>
-      prev.map((q) => {
-        return q.id === id
-          ? {
-              ...q,
-              solved: !q.solved,
-              solvedAt: !q.solved ? new Date().toISOString() : null,
-            }
-          : q;
-      }),
-    );
+  async function handleSolvedToggle(id) {
+    await markAsSolved(id);
+    if (errorMessage === "") {
+      setQuestions((prev) =>
+        prev.map((q) => {
+          return q.id === id
+            ? {
+                ...q,
+                solved: !q.solved,
+                solvedAt: !q.solved ? new Date().toISOString() : null,
+              }
+            : q;
+        }),
+      );
+    }
   }
 
   function handleDifficultyFilter() {
@@ -169,6 +182,23 @@ export default function QuestionList() {
   useEffect(() => {
     fetchQuestions();
   }, [query, sortDirection, difficultyFilter, solvedFilter, page]);
+
+  useEffect(() => {
+    function handleProgressReset() {
+      setAllQuestionsSolved(false);
+      setMoreToLoad(true);
+      if (page === 1) {
+        fetchQuestions();
+      } else {
+        setPage(1);
+      }
+    }
+
+    window.addEventListener("dsamate-progress-reset", handleProgressReset);
+    return () => {
+      window.removeEventListener("dsamate-progress-reset", handleProgressReset);
+    };
+  }, [page, query, sortDirection, difficultyFilter, solvedFilter]);
 
   return (
     <>

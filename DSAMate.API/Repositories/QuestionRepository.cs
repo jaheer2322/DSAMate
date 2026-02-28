@@ -191,8 +191,11 @@ namespace DSAMate.API.Repositories
             }
             else
             {
-                uqs.IsSolved = true; // Just to make sure
-                uqs.SolvedAt = DateTime.UtcNow;
+                var questionToUnsolve = _dbContext.UserQuestionStatuses.Where(uqs => uqs.QuestionId == questionId && uqs.UserId == userId).SingleOrDefault();
+                if (questionToUnsolve != null)
+                {
+                    _dbContext.UserQuestionStatuses.Remove(questionToUnsolve);
+                }
             }
 
             await _dbContext.SaveChangesAsync();
@@ -282,5 +285,12 @@ namespace DSAMate.API.Repositories
                 Hint = q.Hint,
             }).FirstOrDefaultAsync();
         }
+
+        public async Task ResetProgressAsync()
+        {
+            var userId = _userContext.GetUserId();
+            await _dbContext.UserQuestionStatuses.Where(uqs => uqs.UserId == userId).ExecuteDeleteAsync();
+            await _dbContext.SaveChangesAsync();
+        } 
     }
 }

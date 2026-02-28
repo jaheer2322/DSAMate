@@ -73,7 +73,7 @@ namespace DSAMate.API.Controllers
             var user = await _userManager.FindByEmailAsync(loginRequestDTO.EmailAddress);
             if (user == null)
             {
-                return BadRequest(new DefaultResponseDTO { Response = "Incorrect email" });
+                return BadRequest(new DefaultResponseDTO { Response = "An account with this email does not exist" });
             }
 
             var passwordValid = await _userManager.CheckPasswordAsync(user, loginRequestDTO.Password);

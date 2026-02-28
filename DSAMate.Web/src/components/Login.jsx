@@ -28,7 +28,7 @@ export default function Login() {
 
   return (
     <main className="login-page-container">
-      <div className="logo">
+      <div className="login-logo logo">
         <img className="logo-image" src={DsaMateLogo} alt="DsaMate Logo" />
         <span className="logo-text" style={{ color: "white" }}>
           DsaMate

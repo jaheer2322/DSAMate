@@ -19,5 +19,6 @@ namespace DSAMate.API.Repositories
         Task<Dictionary<string, TopicProgressDTO>> GetProgressForUserAsync();
         Task<List<QuestionDTO>> CreateBulkAsync(List<CreateQuestionDTO> createQuestionDTOs);
         Task<QuestionDTO> GetRandomAsync();
+        Task ResetProgressAsync();
     }
 }
