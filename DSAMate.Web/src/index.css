@@ -112,6 +112,10 @@ header:hover {
   }
 }
 
+header:hover .logo-image {
+  transform: scale(1.2);
+}
+
 .logo {
   margin: 20px;
   display: flex;
@@ -147,6 +151,32 @@ header:hover {
   background: transparent;
   height: 100%;
   transition: 0.3s ease;
+}
+
+.profile-menu-container {
+  position: relative;
+  height: 100%;
+  display: flex;
+  align-items: center;
+}
+
+.profile-menu {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  width: 180px;
+  padding: 10px;
+  border-radius: 10px;
+  background: #1f2933;
+  border: 1px solid #5d6a73;
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.35);
+  z-index: 12;
+}
+
+.profile-menu-title {
+  margin: 0 0 8px;
+  color: #dce6ee;
+  font-size: 0.9rem;
 }
 
 .user-profile {
@@ -587,6 +617,7 @@ footer {
   color: #e5e5e5;
   border: 1px solid #5d6a73;
   padding: 16px;
+  transition: 0.5s ease;
 }
 
 .profile-panel-header {
@@ -594,14 +625,6 @@ footer {
   justify-content: space-between;
   align-items: center;
   margin-bottom: 10px;
-}
-
-.close-profile {
-  border: none;
-  background: transparent;
-  color: #ff9b51;
-  font-size: 1.4rem;
-  cursor: pointer;
 }
 
 .profile-radar-chart {
@@ -637,7 +660,7 @@ footer {
 }
 
 .reset-progress-button {
-  margin-top: 14px;
+  margin-top: 4px;
   width: 100%;
   border: none;
   border-radius: 8px;

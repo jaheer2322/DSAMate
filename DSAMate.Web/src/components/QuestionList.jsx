@@ -149,6 +149,7 @@ export default function QuestionList() {
             : q;
         }),
       );
+      window.dispatchEvent(new Event("dsamate-question-updated"));
     }
   }
 

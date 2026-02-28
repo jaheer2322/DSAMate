@@ -111,10 +111,9 @@ function RadarChart({ progress }) {
   );
 }
 
-export default function UserProfilePanel({ onClose }) {
+export default function UserProfilePanel() {
   const [progress, setProgress] = useState({});
   const [loading, setLoading] = useState(true);
-  const [isResetting, setIsResetting] = useState(false);
   const [error, setError] = useState("");
 
   async function fetchProgress() {
@@ -132,27 +131,27 @@ export default function UserProfilePanel({ onClose }) {
 
   useEffect(() => {
     fetchProgress();
-  }, []);
-
-  async function handleResetProgress() {
-    try {
-      setIsResetting(true);
-      await apiClient.post("/questions/reset-progress", {});
-      window.dispatchEvent(new Event("dsamate-progress-reset"));
-      await fetchProgress();
-    } catch {
-      setError("Could not reset progress.");
-    } finally {
-      setIsResetting(false);
+    function handleProgressChanged() {
+      fetchProgress();
     }
-  }
+    window.addEventListener("dsamate-progress-reset", handleProgressChanged);
+    window.addEventListener("dsamate-question-updated", handleProgressChanged);
+
+    return () => {
+      window.removeEventListener(
+        "dsamate-progress-reset",
+        handleProgressChanged,
+      );
+      window.removeEventListener(
+        "dsamate-question-updated",
+        handleProgressChanged,
+      );
+    };
+  }, []);
   const { userName } = useAuth();
   return (
-    <div className="profile-overlay" onClick={onClose}>
-      <div
-        className="profile-panel"
-        onClick={(event) => event.stopPropagation()}
-      >
+    <div className="profile-overlay">
+      <div className="profile-panel">
         <div className="profile-panel-header">
           <h3>{`${userName}'s`} Progress</h3>
         </div>
@@ -162,13 +161,6 @@ export default function UserProfilePanel({ onClose }) {
           <RadarChart progress={progress} />
         )}
         {error ? <p className="error-message">{error}</p> : ""}
-        <button
-          className="reset-progress-button"
-          onClick={handleResetProgress}
-          disabled={isResetting}
-        >
-          {isResetting ? "Resetting..." : "Reset Progress"}
-        </button>
       </div>
     </div>
   );
