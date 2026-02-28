@@ -4,6 +4,7 @@ using DSAMate.API.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace DSAMate.API.Migrations.AuthDb
 {
     [DbContext(typeof(AuthDbContext))]
-    partial class AuthDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251123165032_NewMigration1")]
+    partial class NewMigration1
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -51,15 +54,15 @@ namespace DSAMate.API.Migrations.AuthDb
                     b.HasData(
                         new
                         {
-                            Id = "cf330825-ba85-43bc-9d1b-3d52286bc776",
-                            ConcurrencyStamp = "cf330825-ba85-43bc-9d1b-3d52286bc776",
+                            Id = "cf330825-ba85-43bc-9d1b-3d52286bc775",
+                            ConcurrencyStamp = "cf330825-ba85-43bc-9d1b-3d52286bc775",
                             Name = "User",
                             NormalizedName = "USER"
                         },
                         new
                         {
-                            Id = "37798ece-bdaa-4764-9450-c2dcf7548a1f",
-                            ConcurrencyStamp = "37798ece-bdaa-4764-9450-c2dcf7548a1f",
+                            Id = "37798ece-bdaa-4764-9450-c2dcf7548a2f",
+                            ConcurrencyStamp = "37798ece-bdaa-4764-9450-c2dcf7548a2f",
                             Name = "Admin",
                             NormalizedName = "ADMIN"
                         });

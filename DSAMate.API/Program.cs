@@ -81,6 +81,18 @@ builder.Services.AddIdentityCore<IdentityUser>()
     .AddDefaultTokenProviders()
     .AddEntityFrameworkStores<AuthDbContext>();
 
+// Configure CORS policy to allow frontend origins to use the resource
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowSpecificOrigin",
+        builder =>
+        {
+            builder.WithOrigins("http://localhost:5173", "http://localhost:5174")
+                   .AllowAnyHeader()
+                   .AllowAnyMethod();
+        });
+});
+
 // Customize password requirements for Identity
 builder.Services.Configure<IdentityOptions>(options =>
 {
@@ -124,6 +136,8 @@ if (app.Environment.IsDevelopment())
 app.UseMiddleware<ExceptionHandlerMiddleware>();
 
 app.UseHttpsRedirection();
+
+app.UseCors("AllowSpecificOrigin");
 
 // Enable authentication and authorization middlewares
 app.UseAuthentication();

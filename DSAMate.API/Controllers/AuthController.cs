@@ -1,13 +1,15 @@
 ﻿using DSAMate.API.Data;
 using DSAMate.API.Models.Dtos;
 using DSAMate.API.Services;
+using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 
 namespace DSAMate.API.Controllers
 {
-    [Route("api/[controller]")]
     [ApiController]
+    [Route("api/[controller]")]
+    [EnableCors("AllowSpecificOrigin")]
     public class AuthController : Controller
     {
         private readonly RoleManager<IdentityRole> _rolemanager;
@@ -23,6 +25,7 @@ namespace DSAMate.API.Controllers
         public async Task<IActionResult> Register([FromBody] RegisterRequestDTO registerRequestDto)
         {
             var userEmail = registerRequestDto.EmailAddress;
+            var userName = registerRequestDto.UserName;
             var existingUser = await _userManager.FindByEmailAsync(userEmail);
 
             if (existingUser != null)
@@ -41,7 +44,7 @@ namespace DSAMate.API.Controllers
 
             var identityUser = new IdentityUser
             {
-                UserName = userEmail,
+                UserName = userName,
                 Email = userEmail
             };
 

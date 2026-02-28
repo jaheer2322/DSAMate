@@ -1,6 +1,7 @@
 import DsaMateLogo from "../assets/DsaMateLogo.png";
-const navLinks = ["Home", "Progress"];
+import { useAuth } from "../context";
 export default function Header() {
+  const { userName, logout } = useAuth();
   return (
     <header>
       <div className="logo">
@@ -8,11 +9,17 @@ export default function Header() {
         <span className="logo-text">DsaMate</span>
       </div>
       <div className="nav-links">
-        {navLinks.map((nL, idx) => (
-          <button className="nav-link-item" key={idx}>
-            <a href="#">{nL}</a>
-          </button>
-        ))}
+        <button className="nav-link-item">
+          <a href="#">Home</a>
+        </button>
+        <button className="nav-link-item" onClick={logout}>
+          Logout
+        </button>
+        <button className="nav-link-item">
+          <div className="user-profile">
+            <span>{userName.charAt(0)}</span>
+          </div>
+        </button>
       </div>
     </header>
   );

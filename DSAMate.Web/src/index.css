@@ -9,8 +9,78 @@
 
 body {
   margin: 0;
+  height: 100%;
   font-family: var(--text-font), sans-serif;
   overflow-x: hidden;
+}
+
+main {
+  padding: 0px;
+  display: flex;
+  flex-direction: column;
+}
+
+.login-page-container {
+  margin: 0;
+  height: 80vh;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #101920, #25343f, #314654);
+}
+
+.login-card {
+  width: min(420px, 90vw);
+  padding: 1.5rem;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.95);
+  box-shadow: 0 14px 40px rgba(0, 0, 0, 0.35);
+}
+
+.login-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.login-form label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  color: #1f2933;
+}
+
+.login-form input {
+  border: 1px solid #bfc9d1;
+  border-radius: 8px;
+  padding: 0.55rem 0.7rem;
+  font-size: 1rem;
+}
+
+.login-form button {
+  margin-top: 0.5rem;
+  border: none;
+  background: #25343f;
+  color: #fff;
+  border-radius: 8px;
+  padding: 0.65rem;
+  cursor: pointer;
+}
+
+.login-form button:disabled {
+  opacity: 0.75;
+  cursor: wait;
+}
+
+.error-message {
+  color: #b42318;
+  margin: 0;
+}
+
+.success-message {
+  color: #38a578;
+  margin: 0;
 }
 
 header {
@@ -74,6 +144,28 @@ header:hover {
   transition: 0.3s ease;
 }
 
+.user-profile {
+  height: 35px;
+  width: 35px;
+  border-radius: 50%;
+  background: #27343f;
+  color: #e5e5e5;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  transition: 0.3s ease;
+  border: 1px solid gray;
+}
+
+.user-profile span {
+  font-family: "Times";
+  text-shadow: none;
+}
+
+.user-profile:hover {
+  transform: scale(1.05);
+}
+
 .nav-link-item a {
   text-decoration: none;
   color: var(--logo-color);
@@ -90,7 +182,7 @@ header:hover {
   margin: 50px 0 0;
 }
 
-main {
+.main {
   margin: 50px 0 0;
   padding: 20px 0 20px;
   min-height: 100vh;

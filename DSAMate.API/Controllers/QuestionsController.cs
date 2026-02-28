@@ -1,12 +1,14 @@
 using DSAMate.API.Models.Dtos;
 using DSAMate.API.Repositories;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
 
 namespace DSAMate.API.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
+    [EnableCors("AllowSpecificOrigin")]
     public class QuestionsController : ControllerBase
     {
         private readonly List<string> queryableColumns = new List<string> {

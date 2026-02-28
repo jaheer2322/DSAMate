@@ -18,7 +18,8 @@ namespace DSAMate.API.Services
             var claims = new List<Claim>
             {
                 new Claim("UserId", user.Id),
-                new Claim("Email", user.Email)
+                new Claim("Email", user.Email),
+                new Claim("Username", user.UserName)
             };
 
             foreach (var role in roles)

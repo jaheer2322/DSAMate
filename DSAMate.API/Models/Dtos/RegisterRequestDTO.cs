@@ -5,6 +5,8 @@ namespace DSAMate.API.Models.Dtos
     public class RegisterRequestDTO
     {
         [Required]
+        public string UserName { get; set; }
+        [Required]
         [DataType(DataType.EmailAddress)]
         public string EmailAddress { get; set; }
         [Required]
