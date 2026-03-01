@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import QuestionRow from "./QuestionRow";
 import SearchBar from "./SearchBar";
 import Recommendation from "./Recommendation";
@@ -8,6 +8,7 @@ const difficultyFilters = ["All", "Easy", "Medium", "Hard"];
 const solvedFilters = ["All", "Solved", "Unsolved"];
 
 export default function QuestionList() {
+  const [isLoading, setIsLoading] = useState(false);
   const [revealAll, setRevealAll] = useState(false);
   const [allQuestionsSolved, setAllQuestionsSolved] = useState(false);
   const [questions, setQuestions] = useState([]);
@@ -18,8 +19,17 @@ export default function QuestionList() {
   const [solvedFilter, setSolvedFilter] = useState("All");
   const [errorMessage, setErrorMessage] = useState("");
   const [page, setPage] = useState(1);
+  const abortRef = useRef(null);
 
   async function fetchQuestions() {
+    setIsLoading(true);
+    // Cancel previous request
+    if (abortRef.current) {
+      abortRef.current.abort();
+    }
+    const controller = new AbortController();
+    abortRef.current = controller;
+
     try {
       const searchParams = new URLSearchParams();
       if (query.trim()) {
@@ -41,7 +51,7 @@ export default function QuestionList() {
       searchParams.set("pageSize", "10");
 
       const path = `/questions?${searchParams.toString()}`;
-      const response = await apiClient.get(path);
+      const response = await apiClient.get(path, controller.signal);
       const data = response.data ?? [];
       const newQuestions = data.map((q) => ({
         id: q.id ?? q.Id,
@@ -68,9 +78,17 @@ export default function QuestionList() {
       if (error.name !== "AbortError") {
         setErrorMessage("Could not fetch questions. Please ");
       }
+    } finally {
+      setIsLoading(false);
     }
   }
-
+  useEffect(() => {
+    return () => {
+      if (abortRef.current) {
+        abortRef.current.abort();
+      }
+    };
+  }, []);
   async function fetchRandom() {
     try {
       const path = "/questions/random";
@@ -226,11 +244,21 @@ export default function QuestionList() {
           </a>
         </p>
       )}
+
       <div className="table-container">
         <table>
           <thead>
             <tr>
-              <th>Title</th>
+              <th>
+                {isLoading ? (
+                  <p className="loading-icon" style={{ margin: 0 }}>
+                    Loading...
+                  </p>
+                ) : (
+                  ""
+                )}
+                Title
+              </th>
               <th className="topic-text">
                 Topic
                 <button

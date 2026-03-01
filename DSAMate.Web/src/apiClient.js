@@ -39,10 +39,11 @@ export const post = async (path, body) => {
   return parseResponse(response);
 };
 
-export const get = async (path) => {
+export const get = async (path, signal) => {
   const response = await fetch(`${baseUrl}${path}`, {
     method: "GET",
     headers: buildHeaders(),
+    signal,
   });
 
   return parseResponse(response);

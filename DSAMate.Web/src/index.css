@@ -430,6 +430,10 @@ header:hover .logo-image {
   cursor: pointer;
 }
 
+.loading-icon {
+  position: absolute;
+}
+
 table {
   width: 100%;
   background: #25343f;
