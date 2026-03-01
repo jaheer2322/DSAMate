@@ -78,10 +78,3 @@ dotnet run --project DSAMate.API
 ```bash
 dotnet test DSAMate.API.Tests/DSAMate.API.UnitTests.csproj
 ```
-
-## Interview Talking Points
-
-- Implemented role-aware API surface where admin-only write operations are isolated.
-- Added repository-level safeguards (duplicate title detection, input validation paths).
-- Modeled solved progress as a user-question relationship to support analytics and recommendations.
-- Used middleware and structured logging for maintainable, observable backend behavior.
