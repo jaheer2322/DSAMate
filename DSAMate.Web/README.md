@@ -1,16 +1,60 @@
-# React + Vite
+# DSAMate Frontend (React + Vite)
+A clean, interview-ready frontend for tracking DSA question practice.
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+## What this app demonstrates
+- JWT-based login/register flow
+- Protected app shell for authenticated users
+- Search + filter + sort on question bank
+- Per-question solved toggle with instant UI updates
+- Topic-wise progress dashboard
+- Random unsolved question recommendation
 
-Currently, two official plugins are available:
+## Tech Stack
+### 1) Authentication UX
+- Login and registration screens with error handling
+- JWT persisted in localStorage
+- Username derived from token claims and reused across UI
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+### 2) Question Exploration
+- Search by title/description/topic
+- Filter by difficulty and solved status
+- Sort by title
+- Pagination (“load more” behavior)
+- Topic reveal/hide controls for self-testing
 
-## React Compiler
+### 3) Progress Tracking
+- Side panel chart showing solved vs total per topic
+- Auto-refreshes after solve/un-solve and reset events
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+### 4) Practice Assistance
+- “Up-next” card to fetch a random unsolved question
 
-## Expanding the ESLint configuration
+## Frontend Architecture (high level)
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+- `src/context.jsx` → Auth provider (login/register/logout, token state)
+- `src/apiClient.js` → HTTP client with auth headers + normalized error handling
+- `src/components/QuestionList.jsx` → data fetch + filters + table state
+- `src/components/UserProfilePanel.jsx` → progress API integration + chart rendering
+
+## Local Setup
+
+### Prerequisites
+- Node.js 18+
+- Backend API running on `https://localhost:7197`
+
+### Install & run
+```bash
+npm install
+npm run dev
+```
+
+### Build for production
+```bash
+npm run build
+npm run preview
+```
+
+## API dependency
+
+This frontend expects the backend base URL configured in:
+- `src/apiClient.js` → `https://localhost:7197/api`
