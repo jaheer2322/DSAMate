@@ -650,6 +650,7 @@ footer {
 }
 .progress-heading {
   margin: 0;
+  font-family: "Courier New", Courier, monospace;
 }
 .chart-wrapper {
   display: flex;
@@ -664,7 +665,6 @@ footer {
   border-radius: 12px;
   border-bottom: 1px solid gray;
   margin-bottom: 15px;
-  margin-right: 20px;
 }
 
 .topic-heading {
@@ -680,7 +680,7 @@ footer {
   font-family: var(--logo-font);
   height: 100%;
   background: linear-gradient(170deg, #ff9b51, #8c582e);
-  transition: 0.2s ease;
+  transition: 0.2s cubic-bezier(0.47, 0, 0.745, 0.715);
   border-radius: 12px;
   display: flex;
   align-items: center;

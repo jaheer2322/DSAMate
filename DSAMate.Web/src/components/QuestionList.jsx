@@ -51,7 +51,7 @@ export default function QuestionList() {
         difficulty: q.difficulty ?? q.Difficulty,
         solved: q.solved ?? q.Solved,
         solvedAt: q.solvedAt ?? q.SolvedAt,
-        reveal: false,
+        reveal: revealAll,
       }));
 
       if (newQuestions.length == 0) setMoreToLoad(false);
@@ -88,7 +88,7 @@ export default function QuestionList() {
           difficulty: data.difficulty ?? data.Difficulty,
           solved: data.solved ?? data.Solved,
           solvedAt: data.solvedAt ?? data.SolvedAt,
-          reveal: false,
+          reveal: revealAll,
         };
         setQuestions([randomQuestion]);
         setAllQuestionsSolved(false);
@@ -174,6 +174,7 @@ export default function QuestionList() {
     setSolvedFilter("All");
     setErrorMessage("");
     setMoreToLoad(true);
+    setRevealAll(false);
     setQuestions([]);
 
     if (page === 1) fetchQuestions();

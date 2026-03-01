@@ -1,6 +1,9 @@
 import checked from "../assets/checked.png";
 import cancel from "../assets/cancel.png";
-import speedometer from "../assets/speedometer.png";
+import easy from "../assets/easy.png";
+import medium from "../assets/medium.png";
+import hard from "../assets/hard.png";
+import all from "../assets/all.png";
 
 export default function SearchBar({
   query,
@@ -13,6 +16,12 @@ export default function SearchBar({
   onToggleSolvedFilter,
 }) {
   const solvedIcon = solvedFilter === "Unsolved" ? cancel : checked;
+  const difficultyMap = {
+    All: all,
+    Easy: easy,
+    Medium: medium,
+    Hard: hard,
+  };
   return (
     <div className="search-container">
       <form className="search-form" onSubmit={(e) => e.preventDefault()}>
@@ -53,7 +62,7 @@ export default function SearchBar({
             onClick={onToggleDifficulty}
             title={`Current filter: ${difficultyFilter}`}
           >
-            <img src={speedometer}></img>
+            <img src={difficultyMap[difficultyFilter]}></img>
           </button>
         </label>
         <label>
