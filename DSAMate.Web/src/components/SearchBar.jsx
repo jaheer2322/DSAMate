@@ -1,3 +1,4 @@
+import status from "../assets/status.png";
 import checked from "../assets/checked.png";
 import cancel from "../assets/cancel.png";
 import easy from "../assets/easy.png";
@@ -15,12 +16,16 @@ export default function SearchBar({
   solvedFilter,
   onToggleSolvedFilter,
 }) {
-  const solvedIcon = solvedFilter === "Unsolved" ? cancel : checked;
   const difficultyMap = {
     All: all,
     Easy: easy,
     Medium: medium,
     Hard: hard,
+  };
+  const statusMap = {
+    All: status,
+    Solved: checked,
+    Unsolved: cancel,
   };
   return (
     <div className="search-container">
@@ -66,7 +71,7 @@ export default function SearchBar({
           </button>
         </label>
         <label>
-          Solved ({solvedFilter})
+          Status ({solvedFilter})
           <button
             name="solved"
             className="filter-solved"
@@ -74,7 +79,7 @@ export default function SearchBar({
             onClick={onToggleSolvedFilter}
             title={`Current filter: ${solvedFilter}`}
           >
-            <img src={solvedIcon} alt={solvedFilter}></img>
+            <img src={statusMap[solvedFilter]} alt={solvedFilter}></img>
           </button>
         </label>
       </form>

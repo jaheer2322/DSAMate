@@ -649,8 +649,9 @@ footer {
   font-size: 0.85rem;
 }
 .progress-heading {
+  font-size: 1.2em;
   margin: 0;
-  font-family: "Courier New", Courier, monospace;
+  margin-bottom: 5px;
 }
 .chart-wrapper {
   display: flex;
