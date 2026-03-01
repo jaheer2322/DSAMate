@@ -223,7 +223,7 @@ header:hover .logo-image {
   background: var(--main-background-color);
 }
 .main {
-  margin: 50px 0 0;
+  margin: 50px 0 0 50px;
   padding: 20px 0 20px;
   min-height: 100vh;
   display: flex;
@@ -592,6 +592,12 @@ footer {
   }
 }
 
+@media (max-width: 1200px) {
+  .side-panel {
+    display: none;
+  }
+}
+
 @media (max-width: 800px) {
   .recommendation .cards {
     flex-direction: column;
@@ -608,10 +614,14 @@ footer {
   display: flex;
   align-items: flex-start;
   justify-content: flex-end;
-  padding: 80px 20px 20px;
+  padding: 70px 20px 20px;
+}
+
+.side-panel {
+  width: 30vw;
 }
 .profile-panel {
-  width: 400px;
+  width: 100%;
   border-radius: 12px;
   background: #1f2933;
   color: #e5e5e5;
@@ -627,21 +637,61 @@ footer {
   margin-bottom: 10px;
 }
 
-.profile-radar-chart {
-  width: 100%;
-  height: auto;
-  display: block;
-}
-
 .profile-empty {
   text-align: center;
 }
 
 .profile-legend {
+  margin-bottom: 10px;
   display: flex;
   justify-content: center;
   gap: 16px;
   font-size: 0.85rem;
+}
+.progress-heading {
+  margin: 0;
+}
+.chart-wrapper {
+  display: flex;
+  flex-direction: column;
+}
+
+.topic-card {
+  position: relative;
+  overflow: hidden;
+  height: 35px;
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 12px;
+  border-bottom: 1px solid gray;
+  margin-bottom: 15px;
+  margin-right: 20px;
+}
+
+.topic-heading {
+  font-size: 1em;
+  margin: 5px;
+  font-family: var(--logo-font);
+  color: #b1b1b1;
+}
+
+.completed {
+  box-sizing: border-box;
+  position: absolute;
+  font-family: var(--logo-font);
+  height: 100%;
+  background: linear-gradient(170deg, #ff9b51, #8c582e);
+  transition: 0.2s ease;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding-right: 10px;
+  /* width: 100%; */
+}
+.total {
+  margin: 0 0 0 90%;
+  padding-top: 8px;
+  font-family: var(--logo-font);
 }
 
 .legend-box {
@@ -652,11 +702,13 @@ footer {
 }
 
 .legend-total {
-  background: #ff9b51;
+  background: rgba(0, 0, 0, 0.811);
+  border: 1px solid gray;
 }
 
 .legend-solved {
-  background: #38a578;
+  border: 1px solid gray;
+  background: #ff9b51;
 }
 
 .reset-progress-button {
