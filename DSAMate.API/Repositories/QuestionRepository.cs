@@ -290,7 +290,6 @@ namespace DSAMate.API.Repositories
         {
             var userId = _userContext.GetUserId();
             await _dbContext.UserQuestionStatuses.Where(uqs => uqs.UserId == userId).ExecuteDeleteAsync();
-            await _dbContext.SaveChangesAsync();
         } 
     }
 }
