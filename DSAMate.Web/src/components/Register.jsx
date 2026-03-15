@@ -27,7 +27,10 @@ export default function Register() {
       const response = await register(creds);
       setSuccessMessage(response.response);
     } catch (error) {
-      const message = error?.response.data.response ?? "Unable to register";
+      const message =
+        error?.response.data.response ??
+        error?.response.data.description ??
+        "Unable to register";
       console.log(message);
       setErrorMessage(message);
     }
